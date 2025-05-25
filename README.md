@@ -60,6 +60,8 @@ _警告：实验板往往是不稳定、不确定能够正常运行的版本！_
 |Windows|在此文件夹中打开终端，输入 `.\START.bat`，或直接双击打开也可。 |
 |MacOS/Linux|打开终端，`cd` 到项目文件夹，输入 `.\START` 即可。|
 
+倘若你想要提前下载模型，不仅要安装 [Git](https://git-scm.com/)，还要安装 [Git LFS](https://git-lfs.com/)。
+
 > 注：由于 [huggingface.co](https://huggingface.co/) 被 GFW 屏蔽，因而脚本中允许你使用 [hf-mirror.com](https://hf-mirror.com/) 下载模型，但这样只能够以本地模式运行模型，其存放在 `models` 文件夹下，意味着你也可以制作离线包。
 
 之后，跟随脚本的指引打开部署的网页。
