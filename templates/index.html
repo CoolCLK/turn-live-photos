@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+    <title>trun-live-photos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            transition: .2s ease all;
+        }
+
+        html, body {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgb(255, 255, 255);
+        }
+        
+        ::-webkit-scrollbar, ::-webkit-scrollbar-track, ::-webkit-scrollbar-thumb {
+            background: transparent;
+        }
+
+        .not-selectable {
+            -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+        }
+
+        .not-dragable {
+            -webkit-user-drag: none;
+        }
+
+        .app {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .app>.title {
+            text-align: center;
+            margin: 1rem 0 1rem 0;
+            font-weight: bold;
+            font-size: min(10vw, 3.5rem);
+            color: rgb(0, 0, 0);
+
+            opacity: 0;
+            translate: 0 3rem;
+            animation: element-show-up .5s ease-in-out 0s both;
+        }
+
+        .app>.footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #dropBox {
+            position: relative;
+            width: min(calc(80vw), calc(80vh));
+            height: min(calc(80vw), calc(80vh));
+            max-width: 20rem;
+            max-height: 20rem;
+            border: 2px dashed rgb(152, 152, 152);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1rem;
+            color: rgb(152, 152, 152);
+            
+            opacity: 0;
+            translate: 0 3rem;
+            animation: element-show-up .5s ease-in-out .1s both;
+        }
+        
+        #dropBox:hover {
+            cursor: pointer;
+            border: 2px dashed rgb(27, 27, 27);
+            color: rgb(27, 27, 27);
+        }
+
+        #dragArea {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgb(236, 236, 236);
+            opacity: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: rgb(27, 27, 27);
+            font-size: min(8vw, 2rem);
+        }
+
+        #dragArea.shown {
+            opacity: 1;
+        }
+
+        #dragArea.no-display {
+            opacity: 0;
+            display: none;
+        }
+
+        #dropBoxPreview {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0;
+            display: none;
+            object-fit: contain;
+        }
+
+        #dropBoxPreview.shown {
+            opacity: 1;
+            display: flex;
+        }
+
+        @keyframes element-show-up {
+            100% {
+                opacity: 1;
+                translate: 0 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app not-selectable not-dragable">
+        <span class="title">turn-live-photos</span>
+        <div id="dropBox">
+            <span>点击上传/拖拽一张照片</span>
+            <img id="dropBoxPreview">
+        </div>
+        <div class="footer">
+            <a href="https://github.com/CoolCLK/turn-live-photos">Github</a>
+        </div>
+        <div id="dragArea" class="no-display">
+            <span id="dragAreaNotice"></span>
+        </div>
+    </div>
+    <script>
+        uploadFile = async function(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            fetch('generate', {
+                method: 'POST',
+                body: formData
+            }).then(async (response) => {
+                if (response.status == 200) {
+                    const blob = await response.blob();
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        document.querySelector('#dropBoxPreview').src = reader.result;
+                        document.querySelector('#dropBoxPreview').classList.add('shown');
+                    };
+                    reader.readAsDataURL(blob);
+                } else if (response.status == 413) {
+                    console.log('文件过大');
+                } else {
+                    response.json().then((json) => alert(json['message']));
+                }
+            }).catch(_ => alert('网络错误'));
+        }
+        
+        document.querySelector('#dropBox').addEventListener('click', async function(e) {
+            const [fileHandler] = await window.showOpenFilePicker({
+                multiple: false,
+                types: [{
+                    description: '图像文件',
+                    accept: {'image/*': ['.avif', '.bmp', '.jpeg', '.jpg', '.png', '.tif', '.tiff', '.webp']}
+                }]
+            });
+            uploadFile(await fileHandler.getFile());
+        });
+
+        showDragArea = function() {
+            const element = document.querySelector('#dragArea');
+            if (element.classList.contains('no-display')) {
+                element.classList.remove('no-display');
+                setTimeout(function() {
+                    if (!element.classList.contains('shown')) {
+                        element.classList.add('shown');
+                    }
+                }, 1);
+            }
+        }
+
+        hideDragArea = function() {
+            const element = document.querySelector('#dragArea');
+            if (element.classList.contains('shown')) {
+                element.classList.remove('shown');
+                setTimeout(function() {
+                    if (!element.classList.contains('shown')) {
+                        element.classList.add('no-display');
+                    }
+                }, 200);
+            }
+        }
+        
+        document.documentElement.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            if (!e.dataTransfer.types.includes('Files')) {
+                return;
+            }
+            showDragArea();
+            document.querySelector('#dragAreaNotice').textContent = '松手上传';
+            if (e.dataTransfer.files.length > 1) {
+                document.querySelector('#dragAreaNotice').textContent = '仅允许上传一个文件';
+            }
+        });
+        
+        document.documentElement.addEventListener('mouseout', function(e) {
+            hideDragArea();
+        });
+        
+        document.documentElement.addEventListener('click', function(e) {
+            hideDragArea();
+        });
+        
+        document.querySelector('#dragArea').addEventListener('drop', function(e) {
+            e.preventDefault();
+            hideDragArea();
+            const files = e.dataTransfer.files;
+            if (files.length == 1) {
+                uploadFile(files[0]);
+            }
+        });
+    </script>
+</body>
+</html>
