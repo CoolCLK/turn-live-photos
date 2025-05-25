@@ -87,8 +87,8 @@ def __main__():
     if os.name.lower() == 'linux':
         pipe.unet = torch.compile(pipe.unet)
         logger.info('编译 UNet 模型成功')
+    logger.info("在 %s:%s 启动了 Web 服务器 (http://%s:%s)" % (conf.app_host, conf.app_port, conf.app_host, conf.app_port))
     app.run(host=conf.app_host, port=conf.app_port, threaded=True)
-    logger.info("在 %s:%s 启动了 Web 服务器 (http://%s:%s)" % (conf.app_port, conf.app_port, conf.app_port, conf.app_port))
 
 if __name__ == '__main__':
     __main__()
