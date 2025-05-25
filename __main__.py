@@ -11,6 +11,7 @@ import torch
 import os
 import tempfile
 import configuration as conf
+import sys
 # import torch_directml
 
 def allowed_file(filename):
@@ -19,6 +20,7 @@ def allowed_file(filename):
 
 app = Flask(__name__)
 pipe = None
+output_temp=sys.argv.__contains__('--temp-output')
 
 @app.route('/')
 def index():
@@ -35,7 +37,7 @@ def generate_gif():
     if not allowed_file(file.filename):
         return '{"message": "仅支持JPG/PNG格式"}', 415
     
-    temp_dir = tempfile.mkdtemp()
+    temp_dir = tempfile.mkdtemp() if output_temp else conf.output_folder
     img_path = os.path.join(temp_dir, file.name)
     file.save(img_path)
     
@@ -66,7 +68,7 @@ def __main__():
     global app, pipe
     app.config['MAX_CONTENT_LENGTH'] = conf.app_max_file_size
     logger.info("设定了上传大小限制: %sMB", app.config['MAX_CONTENT_LENGTH'] / 1048576)
-    if not os.path.isdir(conf.output_folder):
+    if (not output_temp) and (not os.path.isdir(conf.output_folder)):
         os.makedirs(conf.output_folder)
     model_file="%s%s" % (conf.model_folder, conf.model_name)
     model_use_local=os.path.isdir(model_file) or os.path.isfile(model_file)
