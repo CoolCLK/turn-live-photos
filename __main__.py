@@ -72,7 +72,7 @@ def __main__():
         os.makedirs(conf.output_folder)
     model_file="%s%s" % (conf.model_folder, conf.model_name)
     model_use_local=os.path.isdir(model_file) or os.path.isfile(model_file)
-    use_model_name=model_file if model_use_local else conf.model_folder
+    use_model_name=model_file if model_use_local else conf.model_name
     command_sets='cpu'
     # if torch_directml.is_available():
     #     command_sets='dml'
