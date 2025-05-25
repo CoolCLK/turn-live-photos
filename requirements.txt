@@ -12,7 +12,7 @@ python-dotenv==1.0.1
 requests==2.31.0
 # 使用来自 pytorch.com 的命令
 # torch==2.7.0+cu128
-torch-directml==0.2.5.dev240914
+# torch-directml==0.2.5.dev240914
 transformers==4.38.0
 imageio[ffmpeg]==2.33.0
 onnxruntime-gpu==1.17.0

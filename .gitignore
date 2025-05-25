@@ -5,4 +5,5 @@ models/*
 # 输出文件
 outputs/*
 # 引用的缓存
+__pycache__
 modules/__pycache__

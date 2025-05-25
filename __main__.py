@@ -73,8 +73,8 @@ def __main__():
     model_use_local=os.path.isdir(model_file) or os.path.isfile(model_file)
     use_model_name=model_file if model_use_local else conf.model_folder
     command_sets='cpu'
-    if torch_directml.is_available():
-        command_sets='dml'
+    # if torch_directml.is_available():
+    #     command_sets='dml'
     if torch.cuda.is_available():
         command_sets='cuda'
     pipe = StableVideoDiffusionPipeline.from_pretrained(

@@ -25,7 +25,9 @@ Python：推荐使用 `3.10.6`，默认使用 `pytorch==2.7.0+cu128`。
 
 #### 使用 AMD 显卡
 
-`torch-directml==0.2.5.dev240914` 已经被提前放入了 [requirments.txt](requirments.txt)，因而可以直接使用，_但是我们并不推荐使用 AMD 显卡进行运算_。
+~~`torch-directml==0.2.5.dev240914` 已经被提前放入了 [requirments.txt](requirments.txt)，因而可以直接使用，_但是我们并不推荐使用 AMD 显卡进行运算_。~~
+
+`torch-directml==0.2.5.dev240914` 与 `pytorch==2.7.0+cu128` 不兼容。
 
 #### 指令集优先级
 
