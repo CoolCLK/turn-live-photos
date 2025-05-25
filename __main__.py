@@ -29,7 +29,6 @@ def index():
 def generate_gif():
     """生成动图"""
     global pipe
-    logger.info(request.files)
     if 'file' not in request.files:
         return '{"message": "没有文件被上传"}', 400
     file = request.files['file']
@@ -83,7 +82,7 @@ def __main__():
         variant="fp16",
         use_safetensors=True,
     ).to(command_sets)
-    logger.info("成功加载了模型 %s" % use_model_name)
+    logger.info("成功以 %s 指令集加载了模型 %s" % (command_sets, use_model_name))
     pipe.enable_model_cpu_offload()
     if os.name.lower() == 'linux':
         pipe.unet = torch.compile(pipe.unet)
