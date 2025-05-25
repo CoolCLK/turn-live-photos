@@ -11,7 +11,7 @@ import torch
 import os
 import tempfile
 import configuration as conf
-import torch_directml
+# import torch_directml
 
 def allowed_file(filename):
     """确认文件是支持的图像文件"""
