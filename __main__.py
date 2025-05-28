@@ -12,6 +12,7 @@ import os
 import tempfile
 import configuration as conf
 import sys
+from accelerate import Accelerator
 # import torch_directml
 
 def allowed_file(filename):
@@ -20,6 +21,7 @@ def allowed_file(filename):
 
 app = Flask(__name__)
 pipe = None
+accelerator = None
 output_temp=sys.argv.__contains__('--temp-output')
 
 @app.route('/')
@@ -30,7 +32,7 @@ def index():
 @app.route('/generate', methods=['POST'])
 def generate_gif():
     """生成动图"""
-    global pipe
+    global pipe, accelerator
     if 'file' not in request.files:
         return '{"message": "没有文件被上传"}', 400
     file = request.files['file']
@@ -43,12 +45,12 @@ def generate_gif():
     
     input_image = Image.open(img_path).convert("RGB")
     
-    torch.cuda.empty_cache()
-    frames = pipe(
-        image=input_image,
-        num_inference_steps=20,
-        num_frames=conf.output_frames,
-    ).frames[0]
+    with accelerator.autocast():
+        frames = pipe(
+            image=input_image,
+            num_inference_steps=20,
+            num_frames=conf.output_frames,
+        ).frames[0]
     
     gif_path = os.path.join(conf.output_folder, "%s.gif" % file.name)
     frames[0].save(
@@ -59,13 +61,12 @@ def generate_gif():
         loop=0,
         optimize=True
     )
-    logger.info('编译 UNet 模型成功')
     
     return send_file(gif_path, mimetype='image/gif')
 
 def __main__():
     """主程序"""
-    global app, pipe
+    global app, logger, pipe
     app.config['MAX_CONTENT_LENGTH'] = conf.app_max_file_size
     logger.info("设定了上传大小限制: %sMB", app.config['MAX_CONTENT_LENGTH'] / 1048576)
     if (not output_temp) and (not os.path.isdir(conf.output_folder)):
@@ -73,18 +74,21 @@ def __main__():
     model_file="%s%s" % (conf.model_folder, conf.model_name)
     model_use_local=os.path.isdir(model_file) or os.path.isfile(model_file)
     use_model_name=model_file if model_use_local else conf.model_name
-    command_sets='cpu'
-    # if torch_directml.is_available():
-    #     command_sets='dml'
-    if torch.cuda.is_available():
-        command_sets='cuda'
+    accelerator = Accelerator(
+        fp16=True,
+        gradient_accumulation_steps=1,
+        mixed_precision="fp16",
+        device_placement=True,
+        log_with="tensorboard"
+    )
     pipe = StableVideoDiffusionPipeline.from_pretrained(
         use_model_name,
         torch_dtype=torch.float16,
         variant="fp16",
         use_safetensors=True,
-    ).to(command_sets)
-    logger.info("成功以 %s 指令集加载了模型 %s" % (command_sets, use_model_name))
+    )
+    pipe = accelerator.prepare(pipe)
+    logger.info("成功加载了模型 %s" % (use_model_name))
     pipe.enable_model_cpu_offload()
     if os.name.lower() == 'linux':
         pipe.unet = torch.compile(pipe.unet)
