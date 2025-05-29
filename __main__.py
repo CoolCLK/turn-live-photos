@@ -3,6 +3,9 @@
 
 from modules.logging import get_logger
 logger = get_logger(__name__)
+import diffusers
+diffusers.utils.logging.set_verbosity_error()
+diffusers.utils.logging.disable_progress_bar()
 
 from flask import Flask, render_template, request, send_file
 from diffusers import StableVideoDiffusionPipeline
@@ -22,7 +25,7 @@ def allowed_file(filename):
 app = Flask(__name__)
 pipe = None
 accelerator = None
-output_temp=sys.argv.__contains__('--temp-output')
+output_temp = sys.argv.__contains__('--temp-output')
 
 @app.route('/')
 def index():
@@ -66,20 +69,19 @@ def generate_gif():
 
 def __main__():
     """主程序"""
-    global app, logger, pipe
-    app.config['MAX_CONTENT_LENGTH'] = conf.app_max_file_size
-    logger.info("设定了上传大小限制: %sMB", app.config['MAX_CONTENT_LENGTH'] / 1048576)
+    global app, logger, pipe, output_temp
     if (not output_temp) and (not os.path.isdir(conf.output_folder)):
         os.makedirs(conf.output_folder)
+    else:
+        logger.info("注意：你已禁用了文件输出，")
+    app.config['MAX_CONTENT_LENGTH'] = conf.app_max_file_size
+    logger.info("设定了上传大小限制: %sMB", app.config['MAX_CONTENT_LENGTH'] / 1048576)
     model_file="%s%s" % (conf.model_folder, conf.model_name)
     model_use_local=os.path.isdir(model_file) or os.path.isfile(model_file)
     use_model_name=model_file if model_use_local else conf.model_name
     accelerator = Accelerator(
         fp16=True,
-        gradient_accumulation_steps=1,
-        mixed_precision="fp16",
-        device_placement=True,
-        log_with="tensorboard"
+        device_placement=True
     )
     pipe = StableVideoDiffusionPipeline.from_pretrained(
         use_model_name,
