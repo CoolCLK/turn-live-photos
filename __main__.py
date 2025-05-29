@@ -76,9 +76,9 @@ def __main__():
         logger.info("注意：你已禁用了文件输出，")
     app.config['MAX_CONTENT_LENGTH'] = conf.app_max_file_size
     logger.info("设定了上传大小限制: %sMB", app.config['MAX_CONTENT_LENGTH'] / 1048576)
-    model_file="%s%s" % (conf.model_folder, conf.model_name)
-    model_use_local=os.path.isdir(model_file) or os.path.isfile(model_file)
-    use_model_name=model_file if model_use_local else conf.model_name
+    model_path="%s%s" % (conf.model_folder, conf.model_name)
+    model_use_local=os.path.isdir(model_path) or os.path.isfile(model_path)
+    use_model_name=model_path if model_use_local else conf.model_name
     accelerator = Accelerator(
         fp16=True,
         device_placement=True
