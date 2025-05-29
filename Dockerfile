@@ -10,4 +10,4 @@ RUN pip install torch==2.7.0+cu128 torchvision torchaudio --index-url https://do
     && pip install -r requirements.txt
 
 USER user
-RUN python __main__.py
+RUN python __main__.py --output-temp
