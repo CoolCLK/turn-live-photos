@@ -31,7 +31,7 @@ Python：推荐使用 `3.10.6`，默认使用 `pytorch==2.7.0+cu128`。
 
 #### 指令集优先级
 
-优先 `cuda`，其次 `dml`，最后 `cpu`，因而可能会出现双卡__只__跑了一张卡的情况。
+优先 `cuda`，其次 `dml`，最后 `cpu`，因而可能会出现双卡**只**跑了一张卡的情况。
 
 ### 下载/安装
 
@@ -89,6 +89,10 @@ _警告：实验板往往是不稳定、不确定能够正常运行的版本！_
 
 ### 协议
 
-你需要在遵守本项目、[stabilityai/stable-video-diffusion-img2vid-xt](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt) 协议的情况下才可以使用 AI 生成工具。
+你需要在遵守本项目、[stabilityai/stable-video-diffusion-img2vid-xt](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt) 模型协议的情况下才可以使用 AI 生成工具。
 
-你需要在遵守本项目[协议](LICENSE)的前提下对此项目进行二次修改。
+你需要在遵守本项目[协议](LICENSE)的前提下对此项目进行二次修改（仅限于代码）。
+
+### 示例
+
+__Google Colab__: [https://colab.research.google.com/drive/1lAswQKTwGNna4fL5swElE1P7UF83_htL?usp=sharing](https://colab.research.google.com/drive/1lAswQKTwGNna4fL5swElE1P7UF83_htL?usp=sharing)
