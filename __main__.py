@@ -69,7 +69,7 @@ def generate_gif():
 
 def __main__():
     """主程序"""
-    global app, logger, pipe, output_temp
+    global app, logger, pipe, output_temp, accelerator
     if (not output_temp) and (not os.path.isdir(conf.output_folder)):
         os.makedirs(conf.output_folder)
     else:
