@@ -19,7 +19,7 @@ parser.add_argument(
     action='store_true',
     type=bool,
     default=False,
-    help='启用临时文件输出模式'
+    help='允许输出进度条'
 )
 parser.add_argument(
     '--max-split-size-mb',
@@ -29,7 +29,7 @@ parser.add_argument(
 )
 args = parser.parse_args()
 if args.max_split_size_mb > 0:
-    os.environ['PYTORCH_CUDA_ALLOC_CONF'] = "max_split_size_mb:%s" % args.max_split_size_mb
+    os.environ['PYTORCH_CUDA_ALLOC_CONF'] = "max_split_size_mb:%s,expandable_segments:True" % args.max_split_size_mb
 
 from modules.logging import get_logger
 from flask import Flask, render_template, request, send_file
