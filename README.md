@@ -148,7 +148,7 @@ drive.mount('/content/drive')
 
 > 需要准备一个 Hugging Face 账号
 
-创建仓库，可以直接导入到 [Hugging Face Spaces](https://huggingface.co/spaces)，仅需在 [README.md] 前加上：
+创建仓库，可以直接导入到 [Hugging Face Spaces](https://huggingface.co/spaces)，仅需在 [README.md](README.md) 前加上：
 
 ```
 ---
