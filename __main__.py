@@ -10,14 +10,12 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
     '--output-temp',
     action='store_true',
-    type=bool,
     default=False,
     help='启用临时文件输出模式'
 )
 parser.add_argument(
     '--progress-bar',
     action='store_true',
-    type=bool,
     default=False,
     help='允许输出进度条'
 )
@@ -44,7 +42,7 @@ from accelerate import Accelerator
 
 logger = get_logger(__name__)
 diffusers.utils.logging.set_verbosity_error()
-if not parser.progress_bar:
+if not args.progress_bar:
     diffusers.utils.logging.disable_progress_bar()
 
 app = Flask(__name__)
