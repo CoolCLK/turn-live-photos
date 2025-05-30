@@ -2,20 +2,8 @@
 # -*- coding: UTF-8 -*-
 
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-from modules.logging import get_logger
-from flask import Flask, render_template, request, send_file
-import diffusers
-from diffusers import StableVideoDiffusionPipeline
-from diffusers.utils import export_to_gif
-from PIL import Image
-import torch
-import os
-import tempfile
-import configuration as conf
 import argparse
-from accelerate import Accelerator
-
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 parser = argparse.ArgumentParser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter
 )
@@ -42,6 +30,17 @@ parser.add_argument(
 args = parser.parse_args()
 if args.max_split_size_mb > 0:
     os.environ['PYTORCH_CUDA_ALLOC_CONF'] = "max_split_size_mb:%s" % args.max_split_size_mb
+
+from modules.logging import get_logger
+from flask import Flask, render_template, request, send_file
+import diffusers
+from diffusers import StableVideoDiffusionPipeline
+from diffusers.utils import export_to_gif
+from PIL import Image
+import torch
+import tempfile
+import configuration as conf
+from accelerate import Accelerator
 
 logger = get_logger(__name__)
 diffusers.utils.logging.set_verbosity_error()
