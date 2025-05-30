@@ -82,17 +82,85 @@ _警告：实验板往往是不稳定、不确定能够正常运行的版本！_
 |`app_port`|`unsigned short`|人话就是0~65535，运行端口|
 |`app_max_file_size`|正整数，以字节为单位|最大允许上传文件的大小|
 |`output_folder`|`string`|输出文件的位置|
-|`output_frame_duration`|正整数，以毫秒作为单位|一秒内的帧数|
-|`output_frames`|正整数|输出帧数|
-|`model_folder`|`string`|储存模型的位置|
+|`output_fps`|`int`，以帧/秒作为单位|_无需多言_|
+|`output_frames`|`int`|输出帧数|
+|`model_folder`|`string`|储存模型的位置，**需要在末尾加上 `/`**|
+|`model_inference_steps`|`int`|越高质量也会越高，但是要求的显存会更高|
+|`model_decode_chunk_size`|`int`|越高的数值有利于减少显存，***小概率*会造成画面撕裂**|
 |`model_name`|`string`|模型名称，此项目使用 [stabilityai/stable-video-diffusion-img2vid-xt](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt)|
+|`model_unet`|`bool`|如果可以使用 UNet 模型的话，那就使用，同时会占用一部分显存，*仅限 Linux 平台*|
+
+倘若你想要配置启动参数的话，可以编辑 [run_args.txt](run_args.txt) 来修改。
+
+如果像获取更多参数帮助，可以使用命令 `python __main__.py --help` 来查阅。
+
+### 模型
+
+我们使用 [stabilityai/stable-video-diffusion-img2vid-xt](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt) 模型来生成内容，顺带一提，我们使用的精度是`fp16`。
+
+你需要在遵守 [stabilityai/stable-video-diffusion-img2vid-xt](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt) 模型协议的情况下才可以使用 AI 生成工具。
 
 ### 协议
 
-你需要在遵守本项目、[stabilityai/stable-video-diffusion-img2vid-xt](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt) 模型协议的情况下才可以使用 AI 生成工具。
-
 你需要在遵守本项目[协议](LICENSE)的前提下对此项目进行二次修改（仅限于代码）。
 
-### 示例
+### 其它平台
 
-> 施工中
+#### [Google Colab](https://colab.research.google.com/)
+
+> 需要一个准备 [Google 账号](https://myaccount.google.com/)。
+
+首先打开 [Google Colab](https://colab.research.google.com/)，之后[新建笔记本](https://colab.research.google.com/#create=true)。
+
+接下来，找到**修改**>**笔记本设置**>**硬件加速器**，任意选择一个即可。
+
+之后，使用新建代码单元格或使用快捷键**Ctrl+M B**，输入：
+
+```
+!apt-get install python3.10
+from google.colab import drive
+drive.mount('/content/drive')
+%cd /content/drive/MyDrive/Colab Notebooks
+!git clone https://github.com/CoolCLK/turn-live-photos.git
+%cd /content/drive/MyDrive/Colab Notebooks/turn-live-photos
+!pip3 install torch==2.7.0+cu128 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+!pip install -r requirements.txt
+!python __main__.py
+```
+
+运行单元格或者使用快捷键**Ctrl+Enter**，稍等即可。
+
+运行完成后，我们会发现我们无法正常访问网址。那么此时我们需要内网穿透。
+
+我们这里以 [ngrok](https://ngrok.com/) 做例子，提前注册好账号后，打开 [Your Authtoken](https://dashboard.ngrok.com/get-started/your-authtoken) 并复制身份验证码，此时对原先代码稍作修改：
+
+```
+!pip install flask-ngrok2
+```
+
+之后，在 [Google Drive](https://drive.google.com/) 找到 **__main__.py**，一般是在**Colab Notebooks/turn-live-photos**下，添加`from flask_ngrok2 import run_with_ngrok`，修改`app.run(host=conf.app_host, port=conf.app_port, threaded=True)`为`app.run()`，并在之前加上`run_with_ngrok(app=app, auth_token='<your-authtoken>')`，运行后应当可以看到了。
+
+> 极力推荐 [Google Colab](https://colab.research.google.com/)，免费额度可以分到*至少 8G 显存*的 GPU。
+
+> 比如我这里用的是**T4 GPU**，并且显存只有*15.0 GB*，这看起来很多，但对于视频生成远远不够，因而我们可以在 [run_args.txt](run_args.txt) 中添加参数，`--max-split-size-mb=6144` 是比较合适的，*但这种方法会使得生成速度变慢*。~~你要氪金也可以。~~
+
+#### [Hugging Face Spaces](https://huggingface.co/spaces)
+
+> 需要准备一个 Hugging Face 账号
+
+创建仓库，可以直接导入到 [Hugging Face Spaces](https://huggingface.co/spaces)，仅需在 [README.md] 前加上：
+
+```
+---
+title: turn-live-photos
+emoji: 😍
+colorFrom: purple
+colorTo: gray
+sdk: docker
+app_port: 5000
+---
+```
+
+然后等待即可。
+
+> Hugging Face 免费额度只提供 CPU，不推荐使用。
