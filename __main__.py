@@ -27,6 +27,13 @@ parser.add_argument(
     help='启用临时文件输出模式'
 )
 parser.add_argument(
+    '--progress-bar',
+    action='store_true',
+    type=bool,
+    default=False,
+    help='启用临时文件输出模式'
+)
+parser.add_argument(
     '--max-split-size-mb',
     type=int,
     default=0,
@@ -36,7 +43,8 @@ args = parser.parse_args()
 
 logger = get_logger(__name__)
 diffusers.utils.logging.set_verbosity_error()
-diffusers.utils.logging.disable_progress_bar()
+if not parser.progress_bar:
+    diffusers.utils.logging.disable_progress_bar()
 
 app = Flask(__name__)
 pipe = None
