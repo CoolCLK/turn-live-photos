@@ -109,7 +109,7 @@ def generate_gif():
         frames = None
         with accelerator.autocast():
             frames = pipe(
-                image=input_image,
+                input_image,
                 num_inference_steps=conf.model_inference_steps,
                 decode_chunk_size=conf.model_decode_chunk_size,
                 num_frames=conf.output_frames,
@@ -144,8 +144,7 @@ def __main__():
     pipe = StableVideoDiffusionPipeline.from_pretrained(
         use_model_name,
         torch_dtype = torch.float16,
-        variant = 'fp16',
-        use_safetensors = True,
+        variant = 'fp16'
     )
     pipe = accelerator.prepare(pipe)
     logger.info("成功加载了模型 %s" % (use_model_name))
