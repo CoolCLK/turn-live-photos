@@ -95,4 +95,4 @@ _警告：实验板往往是不稳定、不确定能够正常运行的版本！_
 
 ### 示例
 
-__Google Colab__: [https://colab.research.google.com/drive/1lAswQKTwGNna4fL5swElE1P7UF83_htL?usp=sharing](https://colab.research.google.com/drive/1lAswQKTwGNna4fL5swElE1P7UF83_htL?usp=sharing)
+> 施工中

@@ -79,10 +79,7 @@ def __main__():
     model_path="%s%s" % (conf.model_folder, conf.model_name)
     model_use_local=os.path.isdir(model_path) or os.path.isfile(model_path)
     use_model_name=model_path if model_use_local else conf.model_name
-    accelerator = Accelerator(
-        fp16=True,
-        device_placement=True
-    )
+    accelerator = Accelerator()
     pipe = StableVideoDiffusionPipeline.from_pretrained(
         use_model_name,
         torch_dtype=torch.float16,
