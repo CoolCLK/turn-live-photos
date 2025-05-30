@@ -40,6 +40,8 @@ parser.add_argument(
     help='设置 PyTorch 的 CUDA 最大分区大小'
 )
 args = parser.parse_args()
+if args.max_split_size_mb > 0:
+    os.environ['PYTORCH_CUDA_ALLOC_CONF'] = "max_split_size_mb:%s" % args.max_split_size_mb
 
 logger = get_logger(__name__)
 diffusers.utils.logging.set_verbosity_error()
@@ -98,8 +100,6 @@ def generate_gif():
 def __main__():
     """主程序"""
     global app, logger, pipe, accelerator
-    if args.max_split_size_mb > 0:
-        os.environ['PYTORCH_CUDA_ALLOC_CONF'] = "max_split_size_mb:%s" % args.max_split_size_mb
     if (not args.output_temp) and (not os.path.isdir(conf.output_folder)):
         os.makedirs(conf.output_folder)
     elif args.output_temp:
