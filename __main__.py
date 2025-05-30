@@ -118,7 +118,7 @@ def generate_gif():
             return '{"message":"结果为空"}', 500
         gif_path = os.path.join(temp_dir if args.output_temp else conf.output_folder, "%s.gif" % file.name)
         export_to_gif(
-            images = frames,
+            image = frames,
             output_gif_path = gif_path,
             fps = conf.output_fps,
         )
