@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from modules.logging import get_logger
 from flask import Flask, render_template, request, send_file
 import diffusers
@@ -13,7 +15,6 @@ import tempfile
 import configuration as conf
 import argparse
 from accelerate import Accelerator
-import os
 
 parser = argparse.ArgumentParser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter
@@ -21,6 +22,8 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
     '--output-temp',
     action='store_true',
+    type=bool,
+    default=False,
     help='启用临时文件输出模式'
 )
 parser.add_argument(
@@ -91,7 +94,7 @@ def __main__():
         os.environ['PYTORCH_CUDA_ALLOC_CONF'] = "max_split_size_mb:%s" % args.max_split_size_mb
     if (not args.output_temp) and (not os.path.isdir(conf.output_folder)):
         os.makedirs(conf.output_folder)
-    else:
+    elif args.output_temp:
         logger.info("注意：你已禁用了文件输出。")
     app.config['MAX_CONTENT_LENGTH'] = conf.app_max_file_size
     model_path="%s%s" % (conf.model_folder, conf.model_name)
