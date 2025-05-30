@@ -49,7 +49,7 @@ _警告：实验板往往是不稳定、不确定能够正常运行的版本！_
 
 当然，你也可以使用 [Git](https://git-scm.com/) 下载。
 
-打开终端，输入 `https://github.com/CoolCLK/turn-live-photos.git` 后等待即可。
+打开终端，输入 `git clone https://github.com/CoolCLK/turn-live-photos.git` 后等待即可。
 
 ### 使用
 
