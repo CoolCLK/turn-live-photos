@@ -142,7 +142,7 @@ drive.mount('/content/drive')
 
 > 极力推荐 [Google Colab](https://colab.research.google.com/)，免费额度可以分到*至少 8G 显存*的 GPU。
 
-> 比如我这里用的是**T4 GPU**，并且显存只有*15.0 GB*，这看起来很多，但对于视频生成远远不够，因而我们可以在 [run_args.txt](run_args.txt) 中添加参数，`--max-split-size-mb=6144` 是比较合适的，*但这种方法会使得生成速度变慢*。~~你要氪金也可以。~~
+> 比如我这里用的是**T4 GPU**，并且显存只有*15.0 GB*，这看起来很多，但对于视频生成远远不够，因而我们可以在 `!python __main__.py` 后面添加参数，`--max-split-size-mb=6144` 是比较合适的，*但这种方法会使得生成速度变慢*。~~你要氪金也可以。~~
 
 #### [Hugging Face Spaces](https://huggingface.co/spaces)
 
