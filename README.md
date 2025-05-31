@@ -5,7 +5,7 @@
 
 Python：推荐使用 `3.10.6`，默认使用 `pytorch==2.7.0+cu128`。
 
-显卡：至少显存大于 `8G`，且 [CUDA](https://developer.nvidia.com/cuda-toolkit) 版本为 `12.8`。
+显卡：至少显存大于 _8G_，且 [CUDA](https://developer.nvidia.com/cuda-toolkit) 版本为 `12.8`。
 
 #### 使用 CPU 或其它版本的 CUDA 
 
@@ -66,7 +66,7 @@ _警告：实验板往往是不稳定、不确定能够正常运行的版本！_
 
 之后，跟随脚本的指引打开部署的网页。
 
-拖放或上传一张长宽或宽长比为 *576x1024* 的照片后等待即可。
+拖放或上传任意一张照片后等待即可。
 
 倘若你不想让结果输出到 `outputs` 的话，可以添加参数 `--output-temp`。
 
@@ -114,17 +114,29 @@ _警告：实验板往往是不稳定、不确定能够正常运行的版本！_
 
 接下来，找到**修改**>**笔记本设置**>**硬件加速器**，任意选择一个即可。
 
-之后，使用新建代码单元格或使用快捷键**Ctrl+M B**，输入：
+之后，使用新建代码单元格或使用快捷键**Ctrl+M B**。
 
-```
-!apt-get install python3.10
+首先，我们要获取到 [Google Drive](https://drive.google.com/) 的访问权限：
+
+```python
 from google.colab import drive
 drive.mount('/content/drive')
+```
+
+之后，我们来克隆仓库后安装一些必要依赖：
+
+```bash
+!apt-get install python3.10
 %cd /content/drive/MyDrive/Colab Notebooks
 !git clone https://github.com/CoolCLK/turn-live-photos.git
 %cd /content/drive/MyDrive/Colab Notebooks/turn-live-photos
 !pip3 install torch==2.7.0+cu128 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
 !pip install -r requirements.txt
+```
+
+最后，我们来运行它：
+
+```bash
 !python __main__.py
 ```
 
@@ -132,17 +144,34 @@ drive.mount('/content/drive')
 
 运行完成后，我们会发现我们无法正常访问网址。那么此时我们需要内网穿透。
 
-我们这里以 [ngrok](https://ngrok.com/) 做例子，提前注册好账号后，打开 [Your Authtoken](https://dashboard.ngrok.com/get-started/your-authtoken) 并复制身份验证码，此时对原先代码稍作修改：
+我们这里以 [ngrok](https://ngrok.com/) 做例子，提前注册好账号后，打开 [Your Authtoken](https://dashboard.ngrok.com/get-started/your-authtoken) 并复制身份验证码，此时对原先代码添加：
 
-```
+```bash
 !pip install flask-ngrok2
 ```
 
-之后，在 [Google Drive](https://drive.google.com/) 找到 **__main__.py**，一般是在**Colab Notebooks/turn-live-photos**下，添加`from flask_ngrok2 import run_with_ngrok`，修改`app.run(host=conf.app_host, port=conf.app_port, threaded=True)`为`app.run()`，并在之前加上`run_with_ngrok(app=app, auth_token='<your-authtoken>')`，运行后应当可以看到了。
+之后，在 [Google Drive](https://drive.google.com/) 找到 **__main__.py**，一般是在**Colab Notebooks/turn-live-photos**下。
+
+在导入依赖中添加：
+
+```python
+from flask_ngrok2 import run_with_ngrok
+```
+
+找到`app.run(host=conf.app_host, port=conf.app_port, threaded=True)`，将它修改为：
+
+```python
+run_with_ngrok(app=app, auth_token='<your-authtoken>')
+app.run()
+```
+
+将 `<your-authtoken>` 换成你的 __Auth Token__ 即可。
 
 > 极力推荐 [Google Colab](https://colab.research.google.com/)，免费额度可以分到*至少 8G 显存*的 GPU。
 
-> 比如我这里用的是**T4 GPU**，并且显存只有*15.0 GB*，这看起来很多，但对于视频生成远远不够，因而我们可以在 `!python __main__.py` 后面添加参数，`--max-split-size-mb=14436` 是比较合适的，你甚至可以填入你所有空闲显存大小，*但这种方法会使得生成速度变慢*。~~你要氪金也可以。~~
+> 比如我这里用的是**T4 GPU**，并且显存只有*15.0 GB*，这看起来很多，但对于视频生成远远不够，因而我们可以在 `!python __main__.py` 后面添加参数，`--max-split-size-mb=14436` 是比较合适的，你甚至可以填入你所有空闲显存大小，*但这种方法会使得生成速度变慢*。
+
+> 缺点是选择比较局限，只能有一个容器使用 GPU 运行时，并且一天只能用 8 个小时 ~~，你要氪金也可以~~。
 
 #### [Hugging Face Spaces](https://huggingface.co/spaces)
 
@@ -150,7 +179,7 @@ drive.mount('/content/drive')
 
 创建仓库，可以直接导入到 [Hugging Face Spaces](https://huggingface.co/spaces)，仅需在 [README.md](README.md) 前加上：
 
-```
+```yaml
 ---
 title: turn-live-photos
 emoji: 😍
@@ -162,5 +191,7 @@ app_port: 5000
 ```
 
 然后等待即可。
+
+> 优点是可以一直用。
 
 > Hugging Face 免费额度只提供 CPU，不推荐使用。

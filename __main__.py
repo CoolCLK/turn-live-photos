@@ -61,36 +61,6 @@ def generate_gif():
         """确认文件是支持的图像文件"""
         return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'avif', 'bmp', 'jpeg', 'jpg', 'png', 'tif', 'tiff', 'webp'}
 
-    def crop_image_to_ratio(
-        input: Image,
-        target_ratios: tuple[tuple[int, int], tuple[int, int]] = ((1024, 576), (576, 1024))
-    ) -> Image:
-        """将图片裁剪为指定长宽比"""
-        width, height = input.size
-        original_ratio = width / height
-        ratios_diff = [
-            (abs(r[0]/r[1] - original_ratio), r) 
-            for r in target_ratios
-        ]
-        target_ratio = min(ratios_diff, key=lambda x: x[0])[1]
-        target_width, target_height = target_ratio
-        if target_width / target_height > original_ratio:
-            new_height = height
-            new_width = int(original_ratio * new_height)
-            crop_dim = (new_width - target_width) // 2
-        else:
-            new_width = width
-            new_height = int(target_width / original_ratio)
-            crop_dim = (new_height - target_height) // 2
-        img_resized = input.resize((new_width, new_height), Image.Resampling.LANCZOS)
-        img_cropped = img_resized.crop((
-            crop_dim,  # 左
-            0 if target_width/target_height > original_ratio else crop_dim,  # 上
-            new_width - crop_dim,  # 右
-            new_height - crop_dim if target_width/target_height > original_ratio else new_height  # 下
-        ))
-        return img_cropped
-
     global pipe, accelerator
     if 'file' not in request.files:
         return '{"message": "没有文件被上传"}', 400
@@ -102,10 +72,7 @@ def generate_gif():
         temp_dir = tempfile.mkdtemp()
         img_path = os.path.join(temp_dir, file.name)
         file.save(img_path)
-        input_image = crop_image_to_ratio(
-            input=Image.open(img_path).convert('RGB'),
-            target_ratios=((1024, 576), (576, 1024))
-        )
+        input_image = Image.open(img_path).convert('RGB')
         frames = None
         with accelerator.autocast():
             frames = pipe(
@@ -123,9 +90,9 @@ def generate_gif():
             fps = conf.output_fps,
         )
         return send_file(gif_path, mimetype='image/gif')
-    except Exception as e:  
-        logger.error("生成时出现了一些问题\n%s", e)
-        return '{"message":"AI 出现了一些问题..."}', 500
+    except Exception as e:
+        logger.warning("生成时出现了一些问题\n%s", e)
+    return '{"message":"AI 出现了一些问题..."}', 500
 
 def __main__():
     """主程序"""
