@@ -129,6 +129,7 @@ drive.mount('/content/drive')
 !apt-get install python3.10
 %cd /content/drive/MyDrive/Colab Notebooks
 !git clone https://github.com/CoolCLK/turn-live-photos.git
+!git pull https://github.com/CoolCLK/turn-live-photos.git
 %cd /content/drive/MyDrive/Colab Notebooks/turn-live-photos
 !pip3 install torch==2.7.0+cu128 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
 !pip install -r requirements.txt
