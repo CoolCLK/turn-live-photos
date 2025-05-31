@@ -12,14 +12,14 @@
     - [下载最新的实验版](#下载最新的实验版)
 - [使用](#使用)
     - [配置](#配置)
+    - [API 接口](#api-接口)
 - [模型](#模型)
 - [协议](#协议)
 - [其它平台](#其它平台)
     - [Google Colab](#google-colab)
     - [Hugging Face Spaces](#hugging-face-spaces)
 - [项目结构](#项目结构)
-    - [Python 部分逻辑](#python-部分逻辑)
-    - [START/START.bat 脚本文件逻辑](startstart.bat-脚本文件逻辑)
+- [编码标准](#编码标准)
 - [尾声](#尾声)
 
 ### 配置要求
@@ -117,6 +117,32 @@ _警告：实验板往往是不稳定、不确定能够正常运行的版本！_
 
 如果像获取更多参数帮助，可以使用命令 `python __main__.py --help` 来查阅。
 
+#### API 接口
+
+##### 地址: `/generate`
+
+__请求类型__: `mutilpart/form-data`
+
+__表单参数__: 
+
+|参数|MIME 类型|
+|---|---|
+|`file`|`image/*`|
+
+__请求方式__: `POST`
+
+__返回内容__: `image/gif`，错误时返回`application/json`
+
+__状态码__:
+
+|状态码|说明|
+|---|---|
+|`200`|成功生成并发送到了客户端|
+|`400`|请求方式、参数有误|
+|`413`|文件大小超过限制|
+|`415`|文件格式有误|
+|`500`|AI 服务报错|
+
 ### 模型
 
 我们使用 [stabilityai/stable-video-diffusion-img2vid-xt](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt) 模型来生成内容，顺带一提，我们使用的精度是`fp16`。
@@ -213,9 +239,10 @@ app_port: 5000
 
 ### 项目结构
 
-#### Python 部分逻辑
-
 ```mermaid
+---
+title: Python 部分逻辑
+---
 stateDiagram-v2
     ScriptModelInit: modules.model.Instance.__init__()
     state ScriptModelInit {
@@ -264,43 +291,96 @@ stateDiagram-v2
         [*] --> CheckArgs
         CheckArgs --> ListenRoutes
         ListenRoutes --> ScriptModelInit
-        ScriptModelInit --> CompileUNet
-        CompileUNet --> LaunchFlask: 跳过 ngrok
-        CompileUNet --> LaunchNgrok
-        ScriptModelInit --> LaunchNgrok: 跳过编译
+        state skip_compile <<choice>>
+        ScriptModelInit --> skip_compile
+        skip_compile --> CompileUNet
+        state skip_ngrok <<choice>>
+        skip_compile --> skip_ngrok: 跳过编译
+        CompileUNet --> skip_ngrok
+        skip_ngrok --> LaunchFlask: 跳过 ngrok
+        skip_ngrok --> LaunchNgrok
         LaunchNgrok --> LaunchFlask
-        ScriptModelInit --> LaunchFlask: 跳过编译，跳过 ngrok
         LaunchFlask --> [*]: 中断运行
     }
 
     [*] --> ScriptApp: 由脚本启动
-    ScriptApp --> [*]: 程序被中断
+    ScriptApp --> [*]: 正常退出
 ```
 
-#### [START](START)/[START.bat](START.bat) 脚本文件逻辑
-
 ```mermaid
+---
+title: 启动脚本逻辑
+---
 stateDiagram-v2
     CheckPython: 检查 Python 版本
-        RecommandPython: 推荐 Python 3.10.6 版本
-        ActivateVenv: 激活虚拟环境
-        CheckRequirements: 检查依赖
-        DownloadModel: 预下载模型
-        DeactivateVenv: 反激活虚拟环境
-        ScriptApp: 运行 app.py
-        End: 结束脚本
-        [*] --> CheckPython
-        CheckPython --> End: 未检测到 Python 环境
-        CheckPython --> RecommandPython: Python 版本不合适
-        RecommandPython --> ActivateVenv
-        CheckPython --> ActivateVenv: Python 版本为 3.10.6
-        ActivateVenv --> CheckRequirements: 确认检查依赖
-        ActivateVenv --> DownloadModel: 跳过检查依赖，确认下载模型
-        ActivateVenv --> ScriptApp: 全部跳过
-        CheckRequirements --> DownloadModel: 确认下载模型
-        ScriptApp --> DeactivateVenv
-        DeactivateVenv --> End
-        End --> [*]
+    state python_state <<choice>>
+    RecommandPython: 推荐 Python 3.10.6 版本
+    ActivateVenv: 激活虚拟环境
+    state requirements_state <<choice>>
+    CheckRequirements: 检查依赖
+    state model_state <<choice>>
+    DownloadModel: 预下载模型
+    DeactivateVenv: 反激活虚拟环境
+    ScriptApp: 运行 app.py
+    End: 结束脚本
+    [*] --> CheckPython
+    CheckPython --> python_state
+    python_state --> End: 未检测到 Python 环境
+    python_state --> RecommandPython: Python 版本不合适
+    RecommandPython --> ActivateVenv
+    python_state --> ActivateVenv: Python 版本为 3.10.6
+    ActivateVenv --> requirements_state
+    requirements_state --> CheckRequirements: 确认检查依赖
+    requirements_state --> model_state: 跳过检查依赖
+    CheckRequirements --> model_state
+    model_state --> DownloadModel: 确认预下载模型
+    DownloadModel --> ScriptApp
+    model_state --> ScriptApp: 跳过预下载
+    ScriptApp --> DeactivateVenv
+    DeactivateVenv --> End
+    End --> [*]
+```
+
+### 编码标准
+
+遇到前后紧密相连的 `=`，请改为 ` = `。
+
+项目遵循 [PEP 287 – reStructuredText Docstring Format](https://peps.python.org/pep-0287/) 的编码标准。
+
+遇到文件，请在开头添加内容并遵循以下格式：
+
+```python
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+"""
+一个 Python 文件。
+
+依赖库: 
+- python==3.10.6 # 也许这不是一个依赖...
+作者: CoolCLK
+"""
+```
+
+遇到包、类，请遵循以下格式：
+
+```python
+"""也许我是一个包的 __init__.py，也许我是一个类"""
+```
+
+遇到方法，请遵循以下格式：
+
+```python
+def func(param1):
+    """
+    这是一个方法。
+
+    :param param1: 第一个参数
+    :type param1: Any
+    :return: 什么也不返回
+    :rtype: None
+    :raises Exception: 永远不会抛出的错误
+    """
+    pass
 ```
 
 ### 尾声

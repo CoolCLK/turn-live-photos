@@ -11,9 +11,7 @@
 - Werkzeug==3.1.3
 - Jinja2==3.1.6
 - 以及所有 modules 下的依赖库...
-
 作者: CoolCLK
-许可证: MIT
 """
 
 from modules.logging import get_logger
@@ -50,21 +48,12 @@ model = None
 
 @app.route('/')
 def route_root():
-    """
-    解析运行时参数。
-
-    :param url: 数据接口地址
-    :type url: str
-    :return: 包含响应数据的字典
-    :rtype: dict
-    :raises ConnectionError: 网络连接失败时抛出
-    """
-    """渲染上传页面"""
+    """监听主页面请求"""
     return render_template('index.html')
 
 @app.route('/generate', methods=['POST'])
 def route_generate():
-    """生成动图"""
+    """监听生成请求"""
     def allowed_file(filename) -> bool:
         """确认文件是支持的图像文件"""
         return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'avif', 'bmp', 'jpeg', 'jpg', 'png', 'tif', 'tiff', 'webp'}
@@ -92,7 +81,7 @@ def route_generate():
             num_frames = conf.output_frames,
             fps = conf.output_fps,
         )
-        return send_file(gif_path, mimetype='image/gif')
+        return send_file(gif_path, mimetype = 'image/gif')
     except Exception as e:
         logger.warning("生成时出现了一些问题\n%s", e)
     
