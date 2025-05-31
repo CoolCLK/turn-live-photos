@@ -95,9 +95,9 @@ def __main__():
     elif args.output_temp:
         logger.info("注意：你已禁用了文件输出。")
     app.config['MAX_CONTENT_LENGTH'] = conf.app_max_file_size
-    model_path="%s%s" % (conf.model_folder, conf.model_name)
-    model_use_local=os.path.isdir(model_path) or os.path.isfile(model_path)
-    use_model_name=model_path if model_use_local else conf.model_name
+    model_path = "%s%s" % (conf.model_folder, conf.model_name)
+    model_use_local = os.path.isdir(model_path) or os.path.isfile(model_path)
+    use_model_name = model_path if model_use_local else conf.model_name
     model = load_model(model = use_model_name, torch_dtype = torch.float16, variant = 'fp16')
     logger.info("成功加载了模型 %s" % (use_model_name))
     if (not conf.model_unet) and (os.name.lower() == 'linux'):
@@ -105,10 +105,10 @@ def __main__():
         logger.info('编译 UNet 模型成功')
     if args.ngrok:
         logger.info("使用 ngrok 启动了 Web 服务器")
-        run_with_ngrok(app=app, auth_token=args.ngrok_authtoken)
+        run_with_ngrok(app = app, auth_token = args.ngrok_authtoken)
         app.run()
     else:
         logger.info("在 %s:%s 启动了 Web 服务器 (http://%s:%s)" % (conf.app_host, conf.app_port, conf.app_host, conf.app_port))
-        app.run(host=conf.app_host, port=conf.app_port, threaded=True)
+        app.run(host = conf.app_host, port = conf.app_port, threaded=True)
 
 __main__()
