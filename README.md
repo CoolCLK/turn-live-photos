@@ -150,19 +150,10 @@ drive.mount('/content/drive')
 !pip install flask-ngrok2
 ```
 
-之后，在 [Google Drive](https://drive.google.com/) 找到 **__main__.py**，一般是在**Colab Notebooks/turn-live-photos**下。
+修改我们原先的启动脚本：
 
-在导入依赖中添加：
-
-```python
-from flask_ngrok2 import run_with_ngrok
-```
-
-找到`app.run(host=conf.app_host, port=conf.app_port, threaded=True)`，将它修改为：
-
-```python
-run_with_ngrok(app=app, auth_token='<your-authtoken>')
-app.run()
+```bash
+!python __main__.py --ngrok --ngrok-authtoken=<your-authtoken>
 ```
 
 将 `<your-authtoken>` 换成你的 __Auth Token__ 即可。

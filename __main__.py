@@ -1,8 +1,10 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
+from modules.logging import get_logger
 import os
 import argparse
+logger = get_logger(__name__)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 parser = argparse.ArgumentParser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter
@@ -25,11 +27,26 @@ parser.add_argument(
     default=0,
     help='设置 PyTorch 的 CUDA 最大分区大小'
 )
+parser.add_argument(
+    '--ngrok',
+    action='store_true',
+    default=False,
+    help='使用 ngrok 进行内网穿透'
+)
+parser.add_argument(
+    '--ngrok-authtoken',
+    type=str,
+    default=None,
+    help='使用'
+)
 args = parser.parse_args()
 if args.max_split_size_mb > 0:
     os.environ['PYTORCH_CUDA_ALLOC_CONF'] = "max_split_size_mb:%s,expandable_segments:True" % args.max_split_size_mb
+if args.ngrok:
+    from flask_ngrok2 import run_with_ngrok
+    if args.ngrok_authtoken is None or args.ngrok_authtoken == "":
+        logger.warning('启用了 ngrok 但是 Auth Token 为空')
 
-from modules.logging import get_logger
 from flask import Flask, render_template, request, send_file
 import diffusers
 from diffusers import StableVideoDiffusionPipeline
@@ -40,7 +57,6 @@ import tempfile
 import configuration as conf
 from accelerate import Accelerator
 
-logger = get_logger(__name__)
 diffusers.utils.logging.set_verbosity_error()
 if not args.progress_bar:
     diffusers.utils.logging.disable_progress_bar()
@@ -119,8 +135,13 @@ def __main__():
     if (not conf.model_unet) and (os.name.lower() == 'linux'):
         pipe.unet = torch.compile(pipe.unet)
         logger.info('编译 UNet 模型成功')
-    logger.info("在 %s:%s 启动了 Web 服务器 (http://%s:%s)" % (conf.app_host, conf.app_port, conf.app_host, conf.app_port))
-    app.run(host=conf.app_host, port=conf.app_port, threaded=True)
+    if args.ngrok:
+        logger.info("使用 ngrok 启动了 Web 服务器")
+        run_with_ngrok(app=app, auth_token=args.ngrok_authtoken)
+        app.run()
+    else:
+        logger.info("在 %s:%s 启动了 Web 服务器 (http://%s:%s)" % (conf.app_host, conf.app_port, conf.app_host, conf.app_port))
+        app.run(host=conf.app_host, port=conf.app_port, threaded=True)
 
 if __name__ == '__main__':
     __main__()
