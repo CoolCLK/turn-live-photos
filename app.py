@@ -1,83 +1,81 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
+"""
+主要的 Web 框架和逻辑。
+
+依赖库: 
+- torch==2.7.0+cu128
+- diffusers==0.33.1
+- pillow==11.2.1
+- Flask==3.1.1
+- Werkzeug==3.1.3
+- Jinja2==3.1.6
+- 以及所有 modules 下的依赖库...
+
+作者: CoolCLK
+许可证: MIT
+"""
 
 from modules.logging import get_logger
-import os
-import argparse
 logger = get_logger(__name__)
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-parser = argparse.ArgumentParser(
-    formatter_class=argparse.ArgumentDefaultsHelpFormatter
-)
-parser.add_argument(
-    '--output-temp',
-    action='store_true',
-    default=False,
-    help='启用临时文件输出模式'
-)
-parser.add_argument(
-    '--progress-bar',
-    action='store_true',
-    default=False,
-    help='允许输出进度条'
-)
-parser.add_argument(
-    '--max-split-size-mb',
-    type=int,
-    default=0,
-    help='设置 PyTorch 的 CUDA 最大分区大小'
-)
-parser.add_argument(
-    '--ngrok',
-    action='store_true',
-    default=False,
-    help='使用 ngrok 进行内网穿透'
-)
-parser.add_argument(
-    '--ngrok-authtoken',
-    type=str,
-    default=None,
-    help='使用'
-)
-args = parser.parse_args()
+
+from modules import envvars
+envvars.tensorflow.set_min_log_level(1)
+
+from modules.argparsing import parse_args
+args = parse_args()
 if args.max_split_size_mb > 0:
-    os.environ['PYTORCH_CUDA_ALLOC_CONF'] = "max_split_size_mb:%s,expandable_segments:True" % args.max_split_size_mb
+    envvars.pytroch.set_expandable_segments(True)
+    envvars.pytroch.set_max_split_size_mb(args.max_split_size_mb)
 if args.ngrok:
     from flask_ngrok2 import run_with_ngrok
     if args.ngrok_authtoken is None or args.ngrok_authtoken == "":
         logger.warning('启用了 ngrok 但是 Auth Token 为空')
 
+import os
 from flask import Flask, render_template, request, send_file
 import diffusers
-from diffusers import StableVideoDiffusionPipeline
-from diffusers.utils import export_to_gif
+from modules.model import load_model
 from PIL import Image
 import torch
 import tempfile
 import configuration as conf
-from accelerate import Accelerator
 
 diffusers.utils.logging.set_verbosity_error()
 if not args.progress_bar:
     diffusers.utils.logging.disable_progress_bar()
 
 app = Flask(__name__)
-pipe = None
-accelerator = None
+model = None
 
 @app.route('/')
-def index():
+def route_root():
+    """
+    解析运行时参数。
+
+    :param url: 数据接口地址
+    :type url: str
+    :return: 包含响应数据的字典
+    :rtype: dict
+    :raises ConnectionError: 网络连接失败时抛出
+    """
     """渲染上传页面"""
     return render_template('index.html')
 
 @app.route('/generate', methods=['POST'])
-def generate_gif():
+def route_generate():
     """生成动图"""
-    def allowed_file(filename):
+    def allowed_file(filename) -> bool:
         """确认文件是支持的图像文件"""
         return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'avif', 'bmp', 'jpeg', 'jpg', 'png', 'tif', 'tiff', 'webp'}
 
-    global pipe, accelerator
+    def read_image_file(file) -> Image:
+        """读取文件"""
+        img_path = os.path.join(tempfile.mkdtemp(), file.name)
+        file.save(img_path)
+        return Image.open(img_path)
+
+    global model
     if 'file' not in request.files:
         return '{"message": "没有文件被上传"}', 400
     file = request.files['file']
@@ -85,34 +83,24 @@ def generate_gif():
         return '{"message": "不支持的格式"}', 415
     
     try:
-        temp_dir = tempfile.mkdtemp()
-        img_path = os.path.join(temp_dir, file.name)
-        file.save(img_path)
-        input_image = Image.open(img_path).convert('RGB')
-        frames = None
-        with accelerator.autocast():
-            frames = pipe(
-                input_image,
-                num_inference_steps=conf.model_inference_steps,
-                decode_chunk_size=conf.model_decode_chunk_size,
-                num_frames=conf.output_frames,
-            ).frames[0]
-        if frames == None:
-            return '{"message":"结果为空"}', 500
-        gif_path = os.path.join(temp_dir if args.output_temp else conf.output_folder, "%s.gif" % file.name)
-        export_to_gif(
-            image = frames,
+        gif_path = os.path.join(tempfile.mkdtemp() if args.output_temp else conf.output_folder, "%s.gif" % file.name)
+        model.generate(
+            image = read_image_file(file = file).convert('RGB'),
             output_gif_path = gif_path,
+            num_inference_steps = conf.model_inference_steps,
+            decode_chunk_size = conf.model_decode_chunk_size,
+            num_frames = conf.output_frames,
             fps = conf.output_fps,
         )
         return send_file(gif_path, mimetype='image/gif')
     except Exception as e:
         logger.warning("生成时出现了一些问题\n%s", e)
+    
     return '{"message":"AI 出现了一些问题..."}', 500
 
 def __main__():
     """主程序"""
-    global app, logger, pipe, accelerator
+    global app, args, logger, model
     if (not args.output_temp) and (not os.path.isdir(conf.output_folder)):
         os.makedirs(conf.output_folder)
     elif args.output_temp:
@@ -121,19 +109,10 @@ def __main__():
     model_path="%s%s" % (conf.model_folder, conf.model_name)
     model_use_local=os.path.isdir(model_path) or os.path.isfile(model_path)
     use_model_name=model_path if model_use_local else conf.model_name
-    accelerator = Accelerator(
-        mixed_precision='fp16'
-    )
-    pipe = StableVideoDiffusionPipeline.from_pretrained(
-        use_model_name,
-        torch_dtype = torch.float16,
-        variant = 'fp16'
-    )
-    pipe = accelerator.prepare(pipe)
+    model = load_model(model = use_model_name, torch_dtype = torch.float16, variant = 'fp16')
     logger.info("成功加载了模型 %s" % (use_model_name))
-    pipe.enable_model_cpu_offload()
     if (not conf.model_unet) and (os.name.lower() == 'linux'):
-        pipe.unet = torch.compile(pipe.unet)
+        model.compile_unet()
         logger.info('编译 UNet 模型成功')
     if args.ngrok:
         logger.info("使用 ngrok 启动了 Web 服务器")
@@ -143,5 +122,4 @@ def __main__():
         logger.info("在 %s:%s 启动了 Web 服务器 (http://%s:%s)" % (conf.app_host, conf.app_port, conf.app_host, conf.app_port))
         app.run(host=conf.app_host, port=conf.app_port, threaded=True)
 
-if __name__ == '__main__':
-    __main__()
+__main__()

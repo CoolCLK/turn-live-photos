@@ -1,6 +1,27 @@
 # turn-live-photos
 将静态照片通过 AIGC 生成为实况照片
 
+### 目录
+
+- [配置要求](#配置要求)
+    - [使用 CPU 或其它版本的 CUDA ](#使用-cpu-或其它版本的-cuda)
+    - [使用 AMD 显卡](#使用-amd-显卡)
+    - [使用 AMD 显卡](#指令集优先级)
+- [下载/安装](#下载安装)
+    - [下载最新的稳定版](#下载最新的稳定版)
+    - [下载最新的实验版](#下载最新的实验版)
+- [使用](#使用)
+    - [配置](#配置)
+- [模型](#模型)
+- [协议](#协议)
+- [其它平台](#其它平台)
+    - [Google Colab](#google-colab)
+    - [Hugging Face Spaces](#hugging-face-spaces)
+- [项目结构](#项目结构)
+    - [Python 部分逻辑](#python-部分逻辑)
+    - [START/START.bat 脚本文件逻辑](startstart.bat-脚本文件逻辑)
+- [尾声](#尾声)
+
 ### 配置要求
 
 Python：推荐使用 `3.10.6`，默认使用 `pytorch==2.7.0+cu128`。
@@ -41,6 +62,8 @@ Python：推荐使用 `3.10.6`，默认使用 `pytorch==2.7.0+cu128`。
 
 找到最新的 [Release](https://api.github.com/repos/CoolCLK/turn-live-photos/releases/latest) 即可下载。
 
+~~不过大概率是不会出稳定版了。~~
+
 #### 下载最新的实验版
 
 _警告：实验板往往是不稳定、不确定能够正常运行的版本！_
@@ -70,7 +93,7 @@ _警告：实验板往往是不稳定、不确定能够正常运行的版本！_
 
 倘若你不想让结果输出到 `outputs` 的话，可以添加参数 `--output-temp`。
 
-### 配置
+#### 配置
 
 我们使用 [configuration.py](configuration.py) 进行配置，不用担心，它们易于配置！
 
@@ -187,3 +210,117 @@ app_port: 5000
 > 优点是可以一直用。
 
 > Hugging Face 免费额度只提供 CPU，不推荐使用。
+
+### 项目结构
+
+#### Python 部分逻辑
+
+```mermaid
+stateDiagram-v2
+    ScriptModelInit: modules.model.Instance.__init__()
+    state ScriptModelInit {
+        InitAccelerator: 加载 Accelerator
+        InitPipeline: 加载 StableVideoDiffusionPipeline
+        CompileUNet: 编译 UNet 模型
+        [*] --> InitAccelerator
+        InitAccelerator --> InitPipeline
+        InitAccelerator --> InitPipeline: 加载加速器
+    }
+
+    ScriptModelGenerate: modules.model.Instance.generate()
+    state ScriptModelGenerate {
+        PipelineWorker: 执行管线
+        ExportToGif: 导出为 Gif 
+        [*] --> PipelineWorker
+        PipelineWorker --> ExportToGif
+        ExportToGif --> [*]
+    }
+
+    ScriptApp: app.__main__()
+    state ScriptApp {
+        state LaunchFlask {
+            RenderTemplate: 渲染模板 templates/index.html
+            [*] --> RenderTemplate
+            RenderTemplate --> [*]
+            --
+            CheckRequest: 检查请求参数、文件格式
+            RequestBad: 返回报错回应
+            RequestFile: 返回 Gif 文件
+            [*] --> CheckRequest
+            CheckRequest --> RequestBad: 文件过大
+            CheckRequest --> RequestBad: 请求方式非 POST 
+            CheckRequest --> RequestBad: 没有文件被上传
+            CheckRequest --> RequestBad: 不支持的格式
+            RequestBad --> [*]
+            CheckRequest --> ScriptModelGenerate
+            ScriptModelGenerate --> RequestFile
+            RequestFile --> [*]
+        }
+
+        CheckArgs: 检查参数
+        ListenRoutes: 映射地址
+        LaunchFlask: 启动 Flask 服务
+        LaunchNgrok: 启动 ngrok 服务
+        [*] --> CheckArgs
+        CheckArgs --> ListenRoutes
+        ListenRoutes --> ScriptModelInit
+        ScriptModelInit --> CompileUNet
+        CompileUNet --> LaunchFlask: 跳过 ngrok
+        CompileUNet --> LaunchNgrok
+        ScriptModelInit --> LaunchNgrok: 跳过编译
+        LaunchNgrok --> LaunchFlask
+        ScriptModelInit --> LaunchFlask: 跳过编译，跳过 ngrok
+        LaunchFlask --> [*]: 中断运行
+    }
+
+    [*] --> ScriptApp: 由脚本启动
+    ScriptApp --> [*]: 程序被中断
+```
+
+#### [START](START)/[START.bat](START.bat) 脚本文件逻辑
+
+```mermaid
+stateDiagram-v2
+    CheckPython: 检查 Python 版本
+        RecommandPython: 推荐 Python 3.10.6 版本
+        ActivateVenv: 激活虚拟环境
+        CheckRequirements: 检查依赖
+        DownloadModel: 预下载模型
+        DeactivateVenv: 反激活虚拟环境
+        ScriptApp: 运行 app.py
+        End: 结束脚本
+        [*] --> CheckPython
+        CheckPython --> End: 未检测到 Python 环境
+        CheckPython --> RecommandPython: Python 版本不合适
+        RecommandPython --> ActivateVenv
+        CheckPython --> ActivateVenv: Python 版本为 3.10.6
+        ActivateVenv --> CheckRequirements: 确认检查依赖
+        ActivateVenv --> DownloadModel: 跳过检查依赖，确认下载模型
+        ActivateVenv --> ScriptApp: 全部跳过
+        CheckRequirements --> DownloadModel: 确认下载模型
+        ScriptApp --> DeactivateVenv
+        DeactivateVenv --> End
+        End --> [*]
+```
+
+### 尾声
+
+本项目从一个 [\_\_main__.py](app.py) 变成了围绕 [app.py](app.py) 的复杂结构的过程，颇让我感到了科技迭代之快。
+
+我们在这个高速发展的时代中，我们可以做些什么？
+
+唯独与时俱进、创新才可以在这个时代中成为少有的佼佼者。
+
+AI 固然会取代一部分工作与岗位，但是 AI 不会取代那些富有创造力的人们。
+
+项目的初心，是为了
+
+> 让过去的时光在时代的照耀下熠熠生辉，
+
+> 让每一次回忆注入新的意义。
+
+那么，本项目除了回忆，还有什么用途呢？
+
+__欢迎各位接入此项目的 API 自由发挥！__
+
+~~电费我不出哈。~~

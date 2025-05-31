@@ -77,7 +77,7 @@ pretrained_model_downloading() {
 
 run_script() {
     echo -e "${LOGGING_PREFIX}以 $(cat run_args.txt) 的参数启动 Python 脚本"
-    python __main__.py $(cat run_args.txt)
+    python app.py $(cat run_args.txt)
     echo -e "${LOGGING_PREFIX}Python 脚本已停止"
 }
 

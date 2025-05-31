@@ -73,7 +73,7 @@ if /i "%DO_DOWNLOAD_MODEL%"=="Y" (
 :run-script
 set /p "ARGUMENTS="<run_args.txt
 if "%ARGUMENTS%"=="" (echo %LOGGING_PREFIX%启动 Python 脚本) else (echo %LOGGING_PREFIX%以 %ARGUMENTS% 的参数启动 Python 脚本)
-"%PYTHON_HOME%/python.exe" __main__.py %ARGUMENTS%
+"%PYTHON_HOME%/python.exe" app.py %ARGUMENTS%
 echo %LOGGING_PREFIX%Python 脚本已停止
 
 :deactivate-venv
