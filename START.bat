@@ -8,7 +8,7 @@ setlocal enabledelayedexpansion
 set "VENV_HOME=.venv"
 set "PYTHON_HOME=%VENV_HOME%/Scripts/"
 set "PYTHON_RECOMMENDED_VERSION=3.10.6"
-set "MODELS_HOME=%~dp0/models/"
+set "MODELS_HOME=./models/"
 set "LOGGING_PREFIX=[90m[[33mCoolCLK[90m/[36mturn-live-photos[90m] [0m"
 
 :check-python
@@ -53,11 +53,12 @@ if /i "%DO_DOWNLOAD_MODEL%"=="Y" (
     set "MODEL_URL=https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt"
     if not %errorlevel% equ 9009 (
         echo %LOGGING_PREFIX%我们默认你已安装 Git LFS（https://git-lfs.com/）
+
         set /p "DO_USE_MODEL_MIRROR_URL=%LOGGING_PREFIX%是否使用 hf-mirror.com 镜像 (Y/n) "
         if /i "!DO_USE_MODEL_MIRROR_URL!"=="Y" (set "MODEL_URL=https://hf-mirror.com/stabilityai/stable-video-diffusion-img2vid-xt")
         set "GIT_ACTION=clone"
-        if exist "%MODELS_HOME%/stabilityai/stable-video-diffusion-img2vid-xt" (set "GIT_ACTION=pull") else (mkdir "%MODELS_HOME%/stabilityai")
-        cd /D "%MODELS_HOME%/stabilityai"
+        if exist "%MODELS_HOME%stabilityai/stable-video-diffusion-img2vid-xt" (set "GIT_ACTION=pull") else (mkdir "%MODELS_HOME%stabilityai">nul)
+        cd /D "%MODELS_HOME%stabilityai"
         echo %LOGGING_PREFIX%开始拉取 stabilityai/stable-video-diffusion-img2vid-xt ...
         set /p "=[31m"<nul
         git lfs install>nul 1>nul
@@ -71,7 +72,7 @@ if /i "%DO_DOWNLOAD_MODEL%"=="Y" (
 
 :run-script
 set /p "ARGUMENTS="<run_args.txt
-echo %LOGGING_PREFIX%以 %ARGUMENTS% 的参数启动 Python 脚本
+if "%ARGUMENTS%"=="" (echo %LOGGING_PREFIX%启动 Python 脚本) else (echo %LOGGING_PREFIX%以 %ARGUMENTS% 的参数启动 Python 脚本)
 "%PYTHON_HOME%/python.exe" __main__.py %ARGUMENTS%
 echo %LOGGING_PREFIX%Python 脚本已停止
 

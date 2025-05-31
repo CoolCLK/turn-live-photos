@@ -65,7 +65,7 @@ pretrained_model_downloading() {
         echo -e "${LOGGING_PREFIX}我们默认你已安装 Git LFS（https://git-lfs.com/）"
         git lfs install --force > /dev/null 2>&1
 
-        MODEL_DIR="$MODELS_HOME/stabilityai/stable-video-diffusion-img2vid-xt"
+        MODEL_DIR="${MODELS_HOME}stabilityai/stable-video-diffusion-img2vid-xt"
         if [[ -d "$MODEL_DIR" ]]; then
             echo -e "${LOGGING_PREFIX}开始拉取 stabilityai/stable-video-diffusion-img2vid-xt ..."
             git -C "$MODEL_DIR" pull > /dev/null 2>&1
