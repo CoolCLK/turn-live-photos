@@ -68,7 +68,7 @@ class __PyTorch():
         """
         if value <= 0:
             raise ValueError("Value out of range.")
-        self.__cuda_alloc_conf_expandable_segments__ = value
+        self.__cuda_alloc_conf_max_split_size_mb__ = value
         self.__buildvalue__()
 
     def set_expandable_segments(self, enable: bool):
