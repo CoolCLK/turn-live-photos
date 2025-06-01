@@ -72,19 +72,27 @@ def route_generate():
     if not allowed_file(file.filename):
         return '{"message": "不支持的格式"}', 415
     
-    def callback():
-        return send_file(gif_path, mimetype = 'image/gif')
+    def callback(path: str):
+        return send_file(path, mimetype = 'image/gif')
 
-    gif_path = os.path.join(tempfile.mkdtemp() if args.output_temp else conf.output_folder, "%s.gif" % file.name)
-    model.generate(
-        image = read_image_file(file = file).convert('RGB'),
-        output_gif_path = gif_path,
-        num_inference_steps = conf.model_inference_steps,
-        decode_chunk_size = conf.model_decode_chunk_size,
-        num_frames = conf.output_frames,
-        fps = conf.output_fps,
-        callback = callback
-    )
+    try:
+        motion_bucket_id = int(request.form.get('motion_bucket_id', None))
+        if motion_bucket_id is not None and (motion_bucket_id < 0 and motion_bucket_id > 255):
+            return '{"message": "motion_bucket_id 超出了范围"}', 400
+        model.generate(
+            image = read_image_file(file = file).convert('RGB'),
+            output_gif_path = os.path.join(tempfile.mkdtemp() if args.output_temp else conf.output_folder, "%s.gif" % file.name),
+            num_frames = conf.output_frames,
+            num_inference_steps = conf.model_inference_steps,
+            max_guidance_scale = float(request.form.get('max_guidance_scale', None)),
+            fps = conf.output_fps,
+            motion_bucket_id = int(motion_bucket_id),
+            noise_aug_strength = float(request.form.get('noise_aug_strength', None)),
+            decode_chunk_size = conf.model_decode_chunk_size,
+            callback = callback,
+        )
+    except ValueError:
+        return '{"message": "请求的参数或服务配置中类型不符合要求"}', 400
 
 def __main__():
     """主程序"""

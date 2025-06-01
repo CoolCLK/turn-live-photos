@@ -11,6 +11,7 @@
 作者: CoolCLK
 """
 
+from typing import Callable, Optional
 import PIL.Image
 import torch
 import PIL
@@ -50,7 +51,19 @@ class Instance:
         """加载 UNet 模型。"""
         self.__pipe = torch.compile(self.__pipe)
 
-    def generate(self, image: PIL.Image, num_inference_steps, decode_chunk_size, num_frames: int, output_gif_path: str, fps: int, callback):
+    def generate(
+            self, 
+            image: PIL.Image,
+            output_gif_path: str,
+            num_frames: int,
+            num_inference_steps: Optional[int] = None,
+            max_guidance_scale: Optional[float] = None,
+            fps: Optional[int] = None,
+            motion_bucket_id: Optional[int] = None,
+            noise_aug_strength: Optional[float] = None,
+            decode_chunk_size: Optional[int] = None,
+            callback: Optional[Callable[[str], None]] = None
+        ):
         """
         生成动图。
 
@@ -67,21 +80,35 @@ class Instance:
         :type output_gif_path: str
         :type fps: int
         """
+        num_inference_steps = num_inference_steps if num_inference_steps is not None else 25
+        max_guidance_scale = max_guidance_scale if max_guidance_scale is not None else 3.0
+        fps = fps if fps is not None else 7
+        motion_bucket_id = motion_bucket_id if motion_bucket_id is not None else 127
+        noise_aug_strength = noise_aug_strength if noise_aug_strength is not None else 0.02
+        decode_chunk_size = decode_chunk_size if decode_chunk_size is not None else num_frames
+        
         with self.__accelerator.autocast():
             frames = self.__pipe(
-                image,
-                num_inference_steps = num_inference_steps,
-                decode_chunk_size = decode_chunk_size,
+                image = image,
+                height = 576,
+                width = 1024,
                 num_frames = num_frames,
+                num_inference_steps = num_inference_steps,
+                max_guidance_scale = max_guidance_scale,
+                fps = fps,
+                motion_bucket_id = motion_bucket_id,
+                noise_aug_strength = noise_aug_strength,
+                decode_chunk_size = decode_chunk_size,
             ).frames[0]
             export_to_fit_gif(
                 image = frames,
                 output_gif_path = output_gif_path,
                 fps = fps,
-                ratio = 1280 / 720,
+                ratio = 1024 / 576,
                 any_rotations = True
             )
-            callback()
+            if callback is not None:
+                callback(output_gif_path)
 
 def load_model(model, torch_dtype, variant):
     return Instance(model, torch_dtype, variant)

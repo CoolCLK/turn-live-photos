@@ -7,7 +7,7 @@
 - [配置要求](#配置要求)
     - [使用 CPU 或其它版本的 CUDA ](#使用-cpu-或其它版本的-cuda)
     - [使用 AMD 显卡](#使用-amd-显卡)
-    - [使用 AMD 显卡](#指令集优先级)
+    - [指令集优先级](#指令集优先级)
 - [下载/安装](#下载安装)
     - [下载最新的稳定版](#下载最新的稳定版)
     - [下载最新的实验版](#下载最新的实验版)
@@ -102,6 +102,8 @@ _警告：实验板往往是不稳定、不确定能够正常运行的版本！_
 
 拖放或上传任意一张照片后等待即可。
 
+> 使用 1024 x 576 的图像最佳。
+
 倘若你不想让结果输出到 `outputs` 的话，可以添加参数 `--output-temp`。
 
 #### 配置
@@ -112,21 +114,26 @@ _警告：实验板往往是不稳定、不确定能够正常运行的版本！_
 
 |属性|值类型|说明|
 |---|---|---|
-|`app_host`|`string`|主机名|
-|`app_port`|`unsigned short`|人话就是0~65535，运行端口|
-|`app_max_file_size`|正整数，以字节为单位|最大允许上传文件的大小|
+|`app_host`|`string`|主机名，_在 ngrok 模式下无效_。|
+|`app_port`|`unsigned short`|人话就是`0`~`65535`，运行端口，_在 ngrok 模式下无效_。|
+|`app_max_file_size`|`unsigned int`|以字节为单位，最大允许上传文件的大小|
 |`output_folder`|`string`|输出文件的位置|
-|`output_fps`|`int`，以帧/秒作为单位|_无需多言_|
-|`output_frames`|`int`|输出帧数|
+|`output_fps`|`unsigned int`，以帧/秒作为单位|最好使用`15`或`24`，效果最好|
+|`output_frames`|`unsigned int`|输出帧数|
 |`model_folder`|`string`|储存模型的位置，**需要在末尾加上 `/`**|
-|`model_inference_steps`|`int`|越高质量也会越高，但是要求的显存会更高|
-|`model_decode_chunk_size`|`int`|越高的数值有利于减少显存，***小概率*会造成画面撕裂**|
+|`model_inference_steps`|`unsigned int`|越高质量也会越高，但是要求的显存会更高。|
+|`model_decode_chunk_size`|`unsigned int`|越高的数值有利于减少显存，***小概率*会造成画面撕裂**|
 |`model_name`|`string`|模型名称，此项目使用 [stabilityai/stable-video-diffusion-img2vid-xt](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt)|
 |`model_unet`|`bool`|如果可以使用 UNet 模型的话，那就使用，同时会占用一部分显存，*仅限 Linux 平台*|
+
+当然，你也可以在 Web 中调节参数，但这是有限的，__因为设计时是考虑到您与您的访客的__，因而一些造成**崩溃**的数值*不会被允许在 Web 上调节*。
 
 倘若你想要配置启动参数的话，可以编辑 [run_args.txt](run_args.txt) 来修改。
 
 如果像获取更多参数帮助，可以使用命令 `python __main__.py --help` 来查阅。
+
+> 我们将您的图像拉伸为了 1024x576 的图像，目前来看，这是一个不错且影响不大的选择。
+> 但不保证未来可能会有些许问题。
 
 #### API 接口
 
@@ -136,9 +143,12 @@ __请求类型__: `mutilpart/form-data`
 
 __表单参数__: 
 
-|参数|MIME 类型|
-|---|---|
-|`file`|`image/*`|
+|参数|MIME 类型|说明|
+|---|---|---|
+|`file`|`image/*`|_必要_|
+|`motion_bucket`|`text/plain`|_可选_，`int`，取值范围`0`~`255`|
+|`noise_aug_strength`|`image/*`|_可选_，`float`|
+|`max_guidance_scale`|`image/*`|_可选_，`float`|
 
 __请求方式__: `POST`
 
