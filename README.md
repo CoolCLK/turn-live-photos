@@ -159,6 +159,12 @@ __状态码__:
 
 > 需要一个准备 [Google 账号](https://myaccount.google.com/)。
 
+##### 使用现成笔记本
+
+直接打开 [Google Colab](https://colab.research.google.com/github/CoolCLK/turn-live-photos/blob/main/turn_live_photos.ipynb) 运行即可。
+
+##### 手动新建笔记本
+
 首先打开 [Google Colab](https://colab.research.google.com/)，之后[新建笔记本](https://colab.research.google.com/#create=true)。
 
 接下来，找到**修改**>**笔记本设置**>**硬件加速器**，任意选择一个即可。
