@@ -2,10 +2,8 @@ accelerate==1.7.0
 colorama==0.4.6
 diffusers==0.33.1
 Flask==3.1.1
-Jinja2==3.1.6
 pillow==11.2.1
 # torch==2.7.0+cu128
 transformers==4.52.1
-Werkzeug==3.1.3
 pyngrok==7.2.9
 flask-ngrok2==0.2.4
