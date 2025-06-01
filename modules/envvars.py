@@ -79,11 +79,11 @@ class __PyTorch():
     
     def __buildvalue__(self):
         confs = []
-        if self.__cuda_alloc_conf_max_split_size_mb > 0:
-            confs += "max_split_size_mb:%s" % self.__cuda_alloc_conf_max_split_size_mb
+        if self.__cuda_alloc_conf_max_split_size_mb__ > 0:
+            confs += "max_split_size_mb:%s" % self.__cuda_alloc_conf_max_split_size_mb__
         if self.__cuda_alloc_conf_expandable_segments__ > 0:
             confs += "expandable_segments:%s" % self.__cuda_alloc_conf_expandable_segments__
-        self.__cuda_alloc_conf.__setvalue__(','.join(confs))
+        self.__cuda_alloc_conf__.__setvalue__(','.join(confs))
 
 tensorflow = __TensorFlow()
 pytroch = __PyTorch()
