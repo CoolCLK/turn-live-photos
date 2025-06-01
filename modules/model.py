@@ -80,5 +80,5 @@ class Instance:
                 fps = fps,
             )
 
-def load_model():
-    return Instance()
+def load_model(model, torch_dtype, variant):
+    return Instance(model, torch_dtype, variant)

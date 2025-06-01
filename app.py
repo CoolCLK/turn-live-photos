@@ -18,7 +18,7 @@ from modules.logging import get_logger
 logger = get_logger(__name__)
 
 from modules import envvars
-envvars.tensorflow.set_min_log_level(1)
+envvars.tensorflow.set_min_log_level(3)
 
 from modules.argparsing import parse_args
 args = parse_args()
