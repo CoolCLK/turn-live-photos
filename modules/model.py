@@ -16,7 +16,7 @@ import torch
 import PIL
 from accelerate import Accelerator
 from diffusers import StableVideoDiffusionPipeline
-from diffusers.utils import export_to_gif
+from modules.utils import export_to_fit_gif
 
 class Instance:
     """处理模型的实例"""
@@ -74,10 +74,12 @@ class Instance:
                 decode_chunk_size = decode_chunk_size,
                 num_frames = num_frames,
             ).frames[0]
-            export_to_gif(
+            export_to_fit_gif(
                 image = frames,
                 output_gif_path = output_gif_path,
                 fps = fps,
+                ratio = 1280 / 720,
+                any_rotations = True
             )
             callback()
 
