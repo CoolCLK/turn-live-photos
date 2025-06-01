@@ -71,21 +71,19 @@ def route_generate():
     if not allowed_file(file.filename):
         return '{"message": "不支持的格式"}', 415
     
-    try:
-        gif_path = os.path.join(tempfile.mkdtemp() if args.output_temp else conf.output_folder, "%s.gif" % file.name)
-        model.generate(
-            image = read_image_file(file = file).convert('RGB'),
-            output_gif_path = gif_path,
-            num_inference_steps = conf.model_inference_steps,
-            decode_chunk_size = conf.model_decode_chunk_size,
-            num_frames = conf.output_frames,
-            fps = conf.output_fps,
-        )
+    def callback():
         return send_file(gif_path, mimetype = 'image/gif')
-    except Exception as e:
-        logger.warning("生成时出现了一些问题\n%s", e)
-    
-    return '{"message":"AI 出现了一些问题..."}', 500
+
+    gif_path = os.path.join(tempfile.mkdtemp() if args.output_temp else conf.output_folder, "%s.gif" % file.name)
+    model.generate(
+        image = read_image_file(file = file).convert('RGB'),
+        output_gif_path = gif_path,
+        num_inference_steps = conf.model_inference_steps,
+        decode_chunk_size = conf.model_decode_chunk_size,
+        num_frames = conf.output_frames,
+        fps = conf.output_fps,
+        callback = callback
+    )
 
 def __main__():
     """主程序"""

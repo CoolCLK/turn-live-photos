@@ -3,6 +3,7 @@
 
 ### 目录
 
+- [效果图](#效果图)
 - [配置要求](#配置要求)
     - [使用 CPU 或其它版本的 CUDA ](#使用-cpu-或其它版本的-cuda)
     - [使用 AMD 显卡](#使用-amd-显卡)
@@ -23,6 +24,14 @@
 - [项目结构](#项目结构)
 - [编码标准](#编码标准)
 - [尾声](#尾声)
+
+### 效果图
+
+<img height="240" src="examples/test-ordinal.jpg"><span style="margin-left: 1rem;"></span><img height="240" src="examples/test-result-compressed.gif">
+
+__源文件 -> 输出__
+
+> 注：此处使用配置 `output_fps = 15`、`output_frames = int(output_fps * 2)`。
 
 ### 配置要求
 
