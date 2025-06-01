@@ -17,6 +17,8 @@
 - [协议](#协议)
 - [其它平台](#其它平台)
     - [Google Colab](#google-colab)
+        - [使用现成笔记本](#使用现成笔记本)
+        - [手动新建笔记本](#手动新建笔记本)
     - [Hugging Face Spaces](#hugging-face-spaces)
 - [项目结构](#项目结构)
 - [编码标准](#编码标准)
@@ -161,7 +163,7 @@ __状态码__:
 
 ##### 使用现成笔记本
 
-直接打开 [Google Colab](https://colab.research.google.com/github/CoolCLK/turn-live-photos/blob/main/turn_live_photos.ipynb) 运行即可。
+直接打开 [turn_live_photoos.ipynb - Colab](https://colab.research.google.com/github/CoolCLK/turn-live-photos/blob/main/turn_live_photos.ipynb) 运行即可。
 
 ##### 手动新建笔记本
 
