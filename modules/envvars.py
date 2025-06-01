@@ -8,7 +8,7 @@
 
 import os
 
-class __EnvironmentVariable:
+class EnvironmentVariable:
     """处理环境变量的通用类"""
 
     __key = None
@@ -31,7 +31,7 @@ class __EnvironmentVariable:
         """
         os.environ[self.__key] = value
 
-class __TensorFlow(__EnvironmentVariable):
+class __TensorFlow(EnvironmentVariable):
     """处理 tensorflow 环境变量"""
 
     def __init__(self):
@@ -51,7 +51,7 @@ class __TensorFlow(__EnvironmentVariable):
 class __PyTorch():
     """处理 pytorch 环境变量"""
 
-    __cuda_alloc_conf = __EnvironmentVariable('PYTORCH_CUDA_ALLOC_CONF')
+    __cuda_alloc_conf = EnvironmentVariable('PYTORCH_CUDA_ALLOC_CONF')
     __cuda_alloc_conf_max_split_size_mb = 0
     __cuda_alloc_conf_expandable_segments = False
 
