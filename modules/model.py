@@ -50,7 +50,7 @@ class Instance:
         """加载 UNet 模型。"""
         self.__pipe = torch.compile(self.__pipe)
 
-    def generate(self, image: PIL.Image, num_inference_steps, decode_chunk_size, num_frames: int, output_gif_path: str, fps: int, callback: function):
+    def generate(self, image: PIL.Image, num_inference_steps, decode_chunk_size, num_frames: int, output_gif_path: str, fps: int, callback):
         """
         生成动图。
 
