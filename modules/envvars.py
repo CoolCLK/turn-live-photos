@@ -11,7 +11,7 @@ import os
 class EnvironmentVariable:
     """处理环境变量的通用类"""
 
-    __key = None
+    __key__ = None
 
     def __init__(self, key):
         """
@@ -20,16 +20,16 @@ class EnvironmentVariable:
         :param key: 键名
         :type key: str
         """
-        self.__key = key
+        self.__key__ = key
 
-    def __setvalue(self, value):
+    def __setvalue__(self, value):
         """
         设定环境变量的值。
 
         :param value: 值
         :type value: str
         """
-        os.environ[self.__key] = value
+        os.environ[self.__key__] = value
 
 class __TensorFlow(EnvironmentVariable):
     """处理 tensorflow 环境变量"""
@@ -46,14 +46,14 @@ class __TensorFlow(EnvironmentVariable):
         """
         if level < 0 or level > 3:
             raise ValueError("Value out of range.")
-        self.__setvalue(str(level))
+        self.__setvalue__(str(level))
 
 class __PyTorch():
     """处理 pytorch 环境变量"""
 
-    __cuda_alloc_conf = EnvironmentVariable('PYTORCH_CUDA_ALLOC_CONF')
-    __cuda_alloc_conf_max_split_size_mb = 0
-    __cuda_alloc_conf_expandable_segments = False
+    __cuda_alloc_conf__ = EnvironmentVariable('PYTORCH_CUDA_ALLOC_CONF')
+    __cuda_alloc_conf_max_split_size_mb__ = 0
+    __cuda_alloc_conf_expandable_segments__ = False
 
     def set_max_split_size_mb(self, value: int):
         """
@@ -64,7 +64,7 @@ class __PyTorch():
         """
         if value <= 0:
             raise ValueError("Value out of range.")
-        self.__cuda_alloc_conf_expandable_segments = value
+        self.__cuda_alloc_conf_expandable_segments__ = value
         self.__buildvalue__()
 
     def set_expandable_segments(self, enable: bool):
@@ -74,16 +74,16 @@ class __PyTorch():
         :param enable: 以 MB 为单位。
         :type enable: bool
         """
-        self.__cuda_alloc_conf_expandable_segments = enable
+        self.__cuda_alloc_conf_expandable_segments__ = enable
         self.__buildvalue__()
     
     def __buildvalue__(self):
         confs = []
         if self.__cuda_alloc_conf_max_split_size_mb > 0:
             confs += "max_split_size_mb:%s" % self.__cuda_alloc_conf_max_split_size_mb
-        if self.__cuda_alloc_conf_expandable_segments > 0:
-            confs += "expandable_segments:%s" % self.__cuda_alloc_conf_expandable_segments
-        self.__cuda_alloc_conf.__setvalue(','.join(confs))
+        if self.__cuda_alloc_conf_expandable_segments__ > 0:
+            confs += "expandable_segments:%s" % self.__cuda_alloc_conf_expandable_segments__
+        self.__cuda_alloc_conf.__setvalue__(','.join(confs))
 
 tensorflow = __TensorFlow()
 pytroch = __PyTorch()
