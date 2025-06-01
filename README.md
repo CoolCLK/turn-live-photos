@@ -172,7 +172,9 @@ __状态码__:
 
 ##### 使用现成笔记本
 
-直接打开 [turn_live_photoos.ipynb - Colab](https://colab.research.google.com/github/CoolCLK/turn-live-photos/blob/main/turn_live_photos.ipynb) 运行即可。
+直接打开 [turn_live_photos.ipynb - Colab](https://colab.research.google.com/github/CoolCLK/turn-live-photos/blob/main/turn_live_photos.ipynb) 运行即可。
+
+视频教程: [【AI/SVD】turn-live-photos 静态图片变实况 - Google Colab 部署教程_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1sG76zEEhj/)
 
 ##### 手动新建笔记本
 
@@ -419,5 +421,3 @@ AI 固然会取代一部分工作与岗位，但是 AI 不会取代那些富有�
 那么，本项目除了回忆，还有什么用途呢？
 
 __欢迎各位接入此项目的 API 自由发挥！__
-
-~~电费我不出哈。~~
