@@ -6,7 +6,10 @@
 作者: CoolCLK
 """
 
+from modules.logging import get_logger
 import os
+
+logger = get_logger('environment')
 
 class EnvironmentVariable:
     """处理环境变量的通用类"""
@@ -30,6 +33,7 @@ class EnvironmentVariable:
         :type value: str
         """
         os.environ[self.__key__] = value
+        logger.info("设定环境变量 %s 为 %s" % (self.__key__, value))
 
 class __TensorFlow(EnvironmentVariable):
     """处理 tensorflow 环境变量"""
