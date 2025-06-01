@@ -372,7 +372,7 @@ stateDiagram-v2
 
 ### 编码标准
 
-遇到前后紧密相连的 `=`，请改为 ` = `。
+遇到前后紧密相连的 `=`，请改为 `<space>=<space>`_（PS：`<space>`是空格哦）_。
 
 项目遵循 [PEP 287 – reStructuredText Docstring Format](https://peps.python.org/pep-0287/) 的编码标准。
 
