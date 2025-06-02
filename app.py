@@ -15,14 +15,18 @@
 """
 
 import logging
-from modules.logging import get_logger
-logger = get_logger(__name__, logging.DEBUG)
 
 from modules import envvars
 envvars.tensorflow.set_min_log_level(3)
 
 from modules.argparsing import parse_args
 args = parse_args()
+from modules.logging import apply_format, get_logger
+logging_level = logging.INFO
+if args.logging_level is not None:
+    logging_level = logging._nameToLevel.get(args.logging_level, logging_level)
+apply_format(logging_level)
+logger = get_logger(__name__, logging_level)
 if args.max_split_size_mb > 0:
     envvars.pytroch.set_expandable_segments(True)
     envvars.pytroch.set_max_split_size_mb(args.max_split_size_mb)

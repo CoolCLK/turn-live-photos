@@ -49,4 +49,10 @@ def parse_args(args: Sequence[str] | None = None):
         default = None,
         help = '使用 ngrok 的 Auth Token '
     )
+    parser.add_argument(
+        '--logging-level',
+        type = str,
+        default = 'INFO',
+        help = '日志等级'
+    )
     return parser.parse_args(args)
