@@ -204,7 +204,7 @@ drive.mount('/content/drive')
 之后，我们来克隆仓库后安装一些必要依赖：
 
 ```bash
-!apt-get install python3.10
+!apt-get install python3.10 # 可选
 %cd /content/drive/MyDrive/Colab Notebooks
 !git clone https://github.com/CoolCLK/turn-live-photos.git
 !git pull https://github.com/CoolCLK/turn-live-photos.git
@@ -236,6 +236,13 @@ drive.mount('/content/drive')
 ```
 
 将 `<your-authtoken>` 换成你的 __Auth Token__ 即可。
+
+如果提示隧道被占用，运行：
+
+```python
+import ngrok
+ngrok.kill()
+```
 
 > 极力推荐 [Google Colab](https://colab.research.google.com/)，免费额度可以分到*至少 8G 显存*的 GPU。
 
