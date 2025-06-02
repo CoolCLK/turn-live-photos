@@ -11,7 +11,7 @@
 import logging
 import colorama
 
-def get_logger(name):
+def get_logger(name: str, level):
     """
     获取一个带格式的 Logger 。
 
@@ -26,6 +26,6 @@ def get_logger(name):
         datefmt = '%Y-%m-%d %H:%M:%S'
     )
     logger = logging.getLogger(name)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(level)
     
     return logger

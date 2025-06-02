@@ -14,9 +14,9 @@
 作者: CoolCLK
 """
 
-from time import sleep
+import logging
 from modules.logging import get_logger
-logger = get_logger(__name__)
+logger = get_logger(__name__, logging.DEBUG)
 
 from modules import envvars
 envvars.tensorflow.set_min_log_level(3)
@@ -27,7 +27,7 @@ if args.max_split_size_mb > 0:
     envvars.pytroch.set_expandable_segments(True)
     envvars.pytroch.set_max_split_size_mb(args.max_split_size_mb)
 if args.ngrok:
-    from flask_ngrok2 import run_with_ngrok
+    import ngrok
     if args.ngrok_authtoken is None or args.ngrok_authtoken == "":
         logger.warning('启用了 ngrok 但是 Auth Token 为空')
 
@@ -114,12 +114,16 @@ def __main__():
     if (not conf.model_unet) and (os.name.lower() == 'linux'):
         model.compile_unet()
         logger.info('编译 UNet 模型成功')
-    if args.ngrok:
-        logger.info("使用 ngrok 启动了 Web 服务器")
-        run_with_ngrok(app = app, auth_token = args.ngrok_authtoken)
-        app.run()
-    else:
+    listener = None
+    try:
+        if args.ngrok:
+            listener = ngrok.forward("%s:%s" % (conf.app_host, conf.app_port), authtoken = args.ngrok_authtoken)
+            logger.info("使用 ngrok 在 %s 监听着 Web 服务器" % listener.url())
         logger.info("在 %s:%s 启动了 Web 服务器 (http://%s:%s)" % (conf.app_host, conf.app_port, conf.app_host, conf.app_port))
         app.run(host = conf.app_host, port = conf.app_port, threaded=True)
+    except KeyboardInterrupt:
+        if listener is not None:
+            listener.close()
+            logger.info('关闭 ngrok 中')
 
 __main__()
