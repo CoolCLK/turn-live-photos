@@ -339,9 +339,9 @@
 
             const formData = new FormData();
             formData.append('file', file);
-            formData.append('motion_bucket_id', document.querySelector('#inputMotionBucket'));
-            formData.append('noise_aug_strength', document.querySelector('#inputNoiseAugStrength'));
-            formData.append('max_guidance_scale', document.querySelector('#inputGuidanceScale'));
+            formData.append('motion_bucket_id', document.querySelector('#inputMotionBucket').value);
+            formData.append('noise_aug_strength', document.querySelector('#inputNoiseAugStrength').value);
+            formData.append('max_guidance_scale', document.querySelector('#inputGuidanceScale').value);
             fetch('generate', {
                 method: 'POST',
                 body: formData

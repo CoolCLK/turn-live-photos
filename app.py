@@ -76,9 +76,6 @@ def route_generate():
         return send_file(path, mimetype = 'image/gif')
 
     try:
-        logger.debug("请求参数 motion_bucket_id %s", request.form.get('motion_bucket_id', None))
-        logger.debug("请求参数 max_guidance_scale %s", request.form.get('max_guidance_scale', None))
-        logger.debug("请求参数 noise_aug_strength %s", request.form.get('noise_aug_strength', None))
         motion_bucket_id = int(request.form.get('motion_bucket_id', None))
         if motion_bucket_id is not None and (motion_bucket_id < 0 and motion_bucket_id > 255):
             return '{"message": "motion_bucket_id 超出了范围"}', 400
@@ -95,7 +92,6 @@ def route_generate():
             callback = callback,
         )
     except ValueError as e:
-        logger.debug('请求的参数或服务配置中类型不符合要求', e)
         return '{"message": "请求的参数或服务配置中类型不符合要求"}', 400
 
 def __main__():
