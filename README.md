@@ -4,6 +4,7 @@
 ### 目录
 
 - [效果图](#效果图)
+- [常见 Q & A](#常见-q-&-a)
 - [配置要求](#配置要求)
     - [使用 CPU 或其它版本的 CUDA ](#使用-cpu-或其它版本的-cuda)
     - [使用 AMD 显卡](#使用-amd-显卡)
@@ -27,11 +28,54 @@
 
 ### 效果图
 
-<img height="240" src="examples/test-ordinal.jpg"><span style="margin-left: 1rem;"></span><img height="240" src="examples/test-result-compressed.gif">
+<img height="240" src="examples/test1-ordinal.jpg"><span style="margin-left: 1rem;"></span><img height="240" src="examples/test1-result-compressed.gif">
 
 __源文件 -> 输出__
 
-> 注：此处使用配置 `output_fps = 15`、`output_frames = int(output_fps * 2)`。
+> 注：此处使用配置 `output_fps=7;output_frames=30;model_inference_steps=20;model_decode_chunk_size=8;`、参数 `motion_bucket_id=127,max_guidance_scale=3,noise_aug_strength=0.02`。
+
+<img height="240" src="examples/test2-ordinal.jpg"><span style="margin-left: 1rem;"></span><img height="240" src="examples/test2-result1.gif">
+
+__源文件 -> 输出__
+
+> 注：此处使用配置 `output_fps=15;output_frames=30;model_inference_steps=20;model_decode_chunk_size=8;`、参数 `motion_bucket_id=127,max_guidance_scale=3,noise_aug_strength=0.1`。
+
+<img height="240" src="examples/test2-ordinal.jpg"><span style="margin-left: 1rem;"></span><img height="240" src="examples/test2-result2.gif">
+
+__源文件 -> 输出__
+
+> 注：此处使用配置 `output_fps=15;output_frames=30;model_inference_steps=20;model_decode_chunk_size=8;`、参数 `motion_bucket_id=255,max_guidance_scale=6,noise_aug_strength=0.1`。
+
+### 常见 Q & A
+
+#### __Q:__ 为什么生成的实况几乎没有什么运动感？
+
+__A:__ 请检查**引导指数**_（`max_guidance_scale`）_，越高的值越会与原照片偏离。
+
+#### __Q:__ 为什么生成的实况会感到对象间糊在一起？
+
+__A:__ 此属于**正常现象**，若要追求更好的效果，可以适当提高**推理步数**_（`model_inference_steps`）_。
+
+#### __Q:__ 为什么生成 CUDA 提示 Out of Memory _(OOM)_？
+
+__A:__ 尽可能降低配置的值，如**推理步数***（`model_inference_steps`）*等。如果设备支持显存**动态分区**_（`expandable_segments`）_，请添加参数 `--max-split-size-mb=<size>`_（其中`<size>`应是你的空闲显存大小）_。
+
+#### __Q:__ 你为什么知道这么多？
+
+<style>
+    .knowing-too-much {
+        color: transparent;
+        transition: .2s ease all;
+        background-color: black;
+    }
+
+    .knowing-too-much:hover {
+        color: white;
+        cursor: not-allowed;
+    }
+</style>
+
+__A:__ <span class="knowing-too-much"><del>因为这些坑我全都踩过。</del></span>
 
 ### 配置要求
 

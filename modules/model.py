@@ -13,6 +13,7 @@
 
 from typing import Callable, Optional
 import PIL.Image
+import numpy as np
 import torch
 import PIL
 from accelerate import Accelerator
@@ -80,18 +81,30 @@ class Instance:
         :type output_gif_path: str
         :type fps: int
         """
+        height = 576
+        width = 1024
         num_inference_steps = num_inference_steps if num_inference_steps is not None else 25
         max_guidance_scale = max_guidance_scale if max_guidance_scale is not None else 3.0
         fps = fps if fps is not None else 7
         motion_bucket_id = motion_bucket_id if motion_bucket_id is not None else 127
         noise_aug_strength = noise_aug_strength if noise_aug_strength is not None else 0.02
         decode_chunk_size = decode_chunk_size if decode_chunk_size is not None else num_frames
-        
+
         with self.__accelerator.autocast():
+            image_tensor = torch.tensor(np.array(image)).permute(2, 0, 1).float()  # [HWC] → [CHW]
+            image_tensor = image_tensor.to().half()
+            
+            image_tensor = torch.nn.functional.interpolate(
+                image_tensor.unsqueeze(0),  # [1, C, H, W]
+                size=(width, height),
+                mode='bilinear',
+                align_corners=False
+            ).squeeze(0)
+
             frames = self.__pipe(
                 image = image,
-                height = 576,
-                width = 1024,
+                height = height,
+                width = width,
                 num_frames = num_frames,
                 num_inference_steps = num_inference_steps,
                 max_guidance_scale = max_guidance_scale,
@@ -104,7 +117,7 @@ class Instance:
                 image = frames,
                 output_gif_path = output_gif_path,
                 fps = fps,
-                ratio = 1024 / 576,
+                ratio = width / height,
                 any_rotations = True
             )
             if callback is not None:

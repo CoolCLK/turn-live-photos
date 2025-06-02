@@ -39,6 +39,7 @@ from PIL import Image
 import torch
 import tempfile
 import configuration as conf
+from time import sleep
 
 diffusers.utils.logging.set_verbosity_error()
 if not args.progress_bar:
@@ -72,8 +73,11 @@ def route_generate():
     if not allowed_file(file.filename):
         return '{"message": "不支持的格式"}', 415
     
+    generate_path = None
+
     def callback(path: str):
-        return send_file(path, mimetype = 'image/gif')
+        global generate_path
+        generate_path = path
 
     try:
         motion_bucket_id = int(request.form.get('motion_bucket_id', None))
@@ -91,8 +95,13 @@ def route_generate():
             decode_chunk_size = conf.model_decode_chunk_size,
             callback = callback,
         )
+        while generate_path is None:
+            sleep(1)
+        return send_file(generate_path, mimetype = 'image/gif')
     except ValueError as e:
         return '{"message": "请求的参数或服务配置中类型不符合要求"}', 400
+    except Exception:
+        pass
 
 def __main__():
     """主程序"""
