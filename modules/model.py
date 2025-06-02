@@ -91,11 +91,10 @@ class Instance:
         decode_chunk_size = decode_chunk_size if decode_chunk_size is not None else num_frames
 
         with self.__accelerator.autocast():
-            image_tensor = torch.tensor(np.array(image)).permute(2, 0, 1).float()  # [HWC] → [CHW]
+            image_tensor = torch.tensor(np.array(image)).permute(2, 0, 1).float()
             image_tensor = image_tensor.to().half()
-            
             image_tensor = torch.nn.functional.interpolate(
-                image_tensor.unsqueeze(0),  # [1, C, H, W]
+                image_tensor.unsqueeze(0),
                 size=(width, height),
                 mode='bilinear',
                 align_corners=False
