@@ -60,22 +60,13 @@ __A:__ 此属于**正常现象**，若要追求更好的效果，可以适当提
 
 __A:__ 尽可能降低配置的值，如**推理步数***（`model_inference_steps`）*等。如果设备支持显存**动态分区**_（`expandable_segments`）_，请添加参数 `--max-split-size-mb=<size>`_（其中`<size>`应是你的空闲显存大小）_。
 
+#### __Q:__ 为什么生成完毕后没有照片？
+
+__A:__ 我在测试时发现是 `TensorHalf` 的问题 _（即数据类型不匹配 `fp16` 的半精度，但奇怪的是它仍旧能够正常运行）_，目前已经在 [更新例子，修复 TensorHalf 的问题（未经测试） · CoolCLK/turn-live-photos@abf2a2a](https://github.com/CoolCLK/turn-live-photos/commit/abf2a2a2704b6342cd843f13f8e71923477f3b72) **尝试**修复了此问题，
+
 #### __Q:__ 你为什么知道这么多？
 
-<style>
-    .knowing-too-much {
-        color: transparent;
-        transition: .2s ease all;
-        background-color: black;
-    }
-
-    .knowing-too-much:hover {
-        color: white;
-        cursor: not-allowed;
-    }
-</style>
-
-__A:__ <span class="knowing-too-much"><del>因为这些坑我全都踩过。</del></span>
+__A:__ ~~因为这些坑我全都踩过。~~
 
 ### 配置要求
 

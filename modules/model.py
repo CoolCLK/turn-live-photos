@@ -63,23 +63,26 @@ class Instance:
             motion_bucket_id: Optional[int] = None,
             noise_aug_strength: Optional[float] = None,
             decode_chunk_size: Optional[int] = None,
-            callback: Optional[Callable[[str], None]] = None
         ):
         """
         生成动图。
 
         :param image: 作为传入参数的图像
-        :param num_inference_steps: 推理步数
-        :param decode_chunk_size: 解析区块数目
-        :param num_frames: 生成总帧数
         :param output_gif_path: 输出地址
+        :param num_frames: 生成总帧数
+        :param num_inference_steps: 推理步数
+        :param max_guidance_scale: 引导指数
         :param fps: 每秒帧数
+        :param motion_bucket_id: 运动级别
+        :param decode_chunk_size: 解析区块数目
         :type image: PIL.Image
-        :type num_inference_steps: int
-        :type decode_chunk_size: int
-        :type num_frames: int
         :type output_gif_path: str
+        :type num_frames: int
+        :type num_inference_steps: int
+        :type max_guidance_scale: int
         :type fps: int
+        :type motion_bucket_id: int
+        :type decode_chunk_size: int
         """
         height = 576
         width = 1024
