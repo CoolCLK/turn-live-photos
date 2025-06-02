@@ -94,8 +94,10 @@ def route_generate():
             decode_chunk_size = conf.model_decode_chunk_size,
         )
         return send_file(generate_path, mimetype = 'image/gif')
-    except ValueError as e:
+    except ValueError:
         return '{"message": "请求的参数或服务配置中类型不符合要求"}', 400
+    except torch.cuda.OutOfMemoryError:
+        return '{"message": "服务器繁忙"}', 503
 
 def __main__():
     """主程序"""
