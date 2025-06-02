@@ -91,7 +91,8 @@ def route_generate():
             decode_chunk_size = conf.model_decode_chunk_size,
             callback = callback,
         )
-    except ValueError:
+    except ValueError as e:
+        logger.warning(e)
         return '{"message": "请求的参数或服务配置中类型不符合要求"}', 400
 
 def __main__():
