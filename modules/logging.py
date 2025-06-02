@@ -11,7 +11,7 @@
 import logging
 import colorama
 
-def get_logger(name: str, level):
+def get_logger(name: str, level = logging.INFO):
     """
     获取一个带格式的 Logger 。
 
