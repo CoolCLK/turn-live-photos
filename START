@@ -56,9 +56,11 @@ if [[ "${DO_CHECK_REQUIRMENTS^^}" == "Y" || -z "$DO_CHECK_REQUIRMENTS" ]]; then
   
   echo -e "${LOGGING_PREFIX}从 requirements.txt 处理依赖中"
   echo -en "\e[31m"
-  python -m pip install --upgrade pip$PIP_ARGS &> /dev/null
-  "${PYTHON_HOME}pip3" install torch==$(get_config InstalltionOptions.TorchVersion) torchvision torchaudio$PIP_ARGS &> /dev/null
-  "${PYTHON_HOME}pip" install -r requirements.txt$PIP_ARGS &> /dev/null
+  "${PYTHON_HOME}pip" install --upgrade pip$PIP_ARGS > /dev/null 2>&1
+  "${PYTHON_HOME}pip" install -r requirements.txt$PIP_ARGS > /dev/null 2>&1
+  if [ $? -eq 1 ]; then
+    "${PYTHON_HOME}pip" install -r requirements.txt > /dev/null 2>&1
+  fi
   echo -en "\e[0m"
 fi
 

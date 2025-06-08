@@ -62,8 +62,10 @@ if /i "%DO_CHECK_REQUIRMENTS%"=="Y" (
     echo %LOGGING_PREFIX%从 requirements.txt 处理依赖中
     set /p=[31m<nul
     python -m pip install --upgrade pip!InstalltionOptions.PipMirrorArguments!>nul 1>nul
-    "!PYTHON_HOME!pip3.exe" install torch==!InstalltionOptions.TorchVersion! torchvision torchaudio!InstalltionOptions.PipMirrorArguments!>nul 1>nul
     "!PYTHON_HOME!pip.exe" install -r requirements.txt!InstalltionOptions.PipMirrorArguments!>nul 1>nul
+    if %errorlevel% equ 1 (
+        "!PYTHON_HOME!pip.exe" install -r requirements.txt>nul 1>nul
+    )
     set /p=[0m<nul
 )
 

@@ -64,13 +64,12 @@ __A:__ 尽可能降低配置的值，如**推理步数***（`model_inference_ste
 
 __A:__ 我在测试时发现是 `TensorHalf` 的问题 _（即数据类型不匹配 `fp16` 的半精度，但奇怪的是它仍旧能够正常运行）_，目前已经在 [更新例子，修复 TensorHalf 的问题（未经测试） · CoolCLK/turn-live-photos@abf2a2a](https://github.com/CoolCLK/turn-live-photos/commit/abf2a2a2704b6342cd843f13f8e71923477f3b72) **尝试**修复了此问题，
 
-#### __Q:__ 你为什么知道这么多？
-
-__A:__ ~~因为这些坑我全都踩过。~~
-
 ### 配置要求
 
-Python：推荐使用 `3.10.6`，默认使用 `pytorch==2.7.0+cu128`。
+Python：推荐使用 `3.10.6`，默认使用 `pytorch==2.7.1+cu128`。
+
+> 前往 [requirements.txt](requirements.txt) 可以修改 `pytorch` 的依赖版本。
+> `pytorch` 依赖的可用版本，可以在 [Get Started](https://pytorch.org/get-started/locally/) 查询，截至该文档更新时，目前支持 `2.7.1+cu118`、`2.7.1+cu126`、`2.7.1+cu128`，_更高的版本往往支持更多的特性_。
 
 显卡：至少显存大于 _8G_，默认 [CUDA](https://developer.nvidia.com/cuda-toolkit) 版本为 `12.8`。
 
@@ -129,7 +128,6 @@ _警告：实验板往往是不稳定、不确定能够正常运行的版本！_
 |`LaunchOptions`|`SkipPythonChecking`|`boolean`|跳过[Python](https://python.org) 的版本检查。|
 |`LaunchOptions`|`RunArguments`|`string`|程序的运行参数。|
 |`InstalltionOptions`|`PipMirrorUrl`|`string`|使用 `pip` 指令时选用的镜像源。|
-|`InstalltionOptions`|`TorchVersion`|`string`| `torch` 依赖选用的版本，可以在 [Get Started](https://pytorch.org/get-started/locally/) 查询，目前支持 `2.7.1+cu118`、`2.7.1+cu126`、`2.7.1+cu128`，更高的版本往往支持更多的特性。|
 |`InstalltionOptions`|`ModelRepositoryUrl`|`string`| 目标模型的仓库 URL 链接，默认使用 [HF-Mirror](https://hf-mirror.com/) 的 [stabilityai/stable-video-diffusion-img2vid-xt](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt)，**需要与 `ModelOptions` 中的 `ModelName` 相匹配**。|
 |`StoreOptions`|`VenvHome`|`string`|[Python](https://python.org) 虚拟环境的位置。|
 |`StoreOptions`|`ModelsHome`|`string`|本地/离线模型存放位置。|
