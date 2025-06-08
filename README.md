@@ -68,8 +68,8 @@ __A:__ 我在测试时发现是 `TensorHalf` 的问题 _（即数据类型不匹
 
 Python：推荐使用 `3.10.6`，默认使用 `pytorch==2.7.1+cu128`。
 
-> 前往 [requirements.txt](requirements.txt) 可以修改 `pytorch` 的依赖版本。
-> `pytorch` 依赖的可用版本，可以在 [Get Started](https://pytorch.org/get-started/locally/) 查询，截至该文档更新时，目前支持 `2.7.1+cu118`、`2.7.1+cu126`、`2.7.1+cu128`，_更高的版本往往支持更多的特性_。
+> 前往 [requirements.txt](requirements.txt) 可以修改 `pytorch` 的依赖版本，不要忘记修改 [configuration.ini](configuration.ini) 的 `InstalltionOptions.PyTorchIndexUrl` 哦。
+> `pytorch` 依赖的可用版本及 `InstalltionOptions.PyTorchIndexUrl`，可以在 [Get Started](https://pytorch.org/get-started/locally/) 查询，截至该文档更新时，目前支持 `2.7.1+cu118`、`2.7.1+cu126`、`2.7.1+cu128`，_更高的版本往往支持更多的特性_。
 
 显卡：至少显存大于 _8G_，默认 [CUDA](https://developer.nvidia.com/cuda-toolkit) 版本为 `12.8`。
 
@@ -125,8 +125,9 @@ _警告：实验板往往是不稳定、不确定能够正常运行的版本！_
 |项|键|值类型|说明|
 |---|---|---|---|
 |`LaunchOptions`|`UseVenv`|`boolean`|使用虚拟环境。|
-|`LaunchOptions`|`SkipPythonChecking`|`boolean`|跳过[Python](https://python.org) 的版本检查。|
+|`LaunchOptions`|`SkipPythonChecking`|`boolean`|跳过 [Python](https://python.org) 的版本检查。|
 |`LaunchOptions`|`RunArguments`|`string`|程序的运行参数。|
+|`InstalltionOptions`|`PyTorchIndexUrl`|`string`|镜像缺失依赖会在链接中获取，可在 [Get Started](https://pytorch.org/get-started/locally/) 查询。|
 |`InstalltionOptions`|`PipMirrorUrl`|`string`|使用 `pip` 指令时选用的镜像源。|
 |`InstalltionOptions`|`ModelRepositoryUrl`|`string`| 目标模型的仓库 URL 链接，默认使用 [HF-Mirror](https://hf-mirror.com/) 的 [stabilityai/stable-video-diffusion-img2vid-xt](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt)，**需要与 `ModelOptions` 中的 `ModelName` 相匹配**。|
 |`StoreOptions`|`VenvHome`|`string`|[Python](https://python.org) 虚拟环境的位置。|

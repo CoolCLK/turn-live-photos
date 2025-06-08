@@ -52,15 +52,13 @@ fi
 read -r -p "${LOGGING_PREFIX}是否检查依赖 (Y/n) " DO_CHECK_REQUIRMENTS
 if [[ "${DO_CHECK_REQUIRMENTS^^}" == "Y" || -z "$DO_CHECK_REQUIRMENTS" ]]; then
   PIP_ARGS=""
-  [[ -n "${CONFIG[InstalltionOptions.PipMirrorUrl]}" ]] && PIP_ARGS=" -i ${CONFIG[InstalltionOptions.PipMirrorUrl]}"
+  [[ -n "${CONFIG[InstalltionOptions.PyTorchIndexUrl]}" ]] && PIP_ARGS="$PIP_ARGS --extra-index-url ${CONFIG[InstalltionOptions.PyTorchIndexUrl]}"
+  [[ -n "${CONFIG[InstalltionOptions.PipMirrorUrl]}" ]] && PIP_ARGS="$PIP_ARGS -i ${CONFIG[InstalltionOptions.PipMirrorUrl]}"
   
   echo -e "${LOGGING_PREFIX}从 requirements.txt 处理依赖中"
   echo -en "\e[31m"
-  "${PYTHON_HOME}pip" install --upgrade pip$PIP_ARGS > /dev/null 2>&1
-  "${PYTHON_HOME}pip" install -r requirements.txt$PIP_ARGS > /dev/null 2>&1
-  if [ $? -eq 1 ]; then
-    "${PYTHON_HOME}pip" install -r requirements.txt > /dev/null 2>&1
-  fi
+  "${PYTHON_HOME}pip" install --upgrade pip $PIP_ARGS > /dev/null 2>&1
+  "${PYTHON_HOME}pip" install -r requirements.txt $PIP_ARGS > /dev/null 2>&1
   echo -en "\e[0m"
 fi
 

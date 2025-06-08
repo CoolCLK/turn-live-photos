@@ -56,16 +56,16 @@ if /i "!LaunchOptions.UseVenv!"=="True" (
 set /p "DO_CHECK_REQUIRMENTS=%LOGGING_PREFIX%是否检查依赖 (Y/n) "
 if /i "%DO_CHECK_REQUIRMENTS%"=="Y" (
     set "InstalltionOptions.PipMirrorArguments="
+    if not "!InstalltionOptions.PyTorchIndexUrl!"=="" (
+        set "InstalltionOptions.PipMirrorArguments=!InstalltionOptions.PipMirrorArguments! --extra-index-url !InstalltionOptions.PyTorchIndexUrl!"
+    )
     if not "!InstalltionOptions.PipMirrorUrl!"=="" (
-        set "InstalltionOptions.PipMirrorArguments= -i !InstalltionOptions.PipMirrorUrl!"
+        set "InstalltionOptions.PipMirrorArguments=!InstalltionOptions.PipMirrorArguments! -i !InstalltionOptions.PipMirrorUrl!"
     )
     echo %LOGGING_PREFIX%从 requirements.txt 处理依赖中
     set /p=[31m<nul
     python -m pip install --upgrade pip!InstalltionOptions.PipMirrorArguments!>nul 1>nul
-    "!PYTHON_HOME!pip.exe" install -r requirements.txt!InstalltionOptions.PipMirrorArguments!>nul 1>nul
-    if %errorlevel% equ 1 (
-        "!PYTHON_HOME!pip.exe" install -r requirements.txt>nul 1>nul
-    )
+    "!PYTHON_HOME!pip.exe" install -r requirements.txt !InstalltionOptions.PipMirrorArguments!>nul 1>nul
     set /p=[0m<nul
 )
 
