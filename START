@@ -1,95 +1,108 @@
 #!/bin/bash
 
-VENV_HOME=".venv"
-PYTHON_HOME="$VENV_HOME/bin"
+cd "$(dirname "$0")" || exit 1
+
+declare -A CONFIG
+current_category=""
+while IFS= read -r line; do
+  line="${line//$'\r'/}"
+  if [[ "${line:0:1}" == "[" ]]; then
+    current_category="${line:1:$((${#line}-2))}"
+  elif [[ -n $line && "${line:0:1}" != "#" ]]; then
+    IFS='=' read -r key value <<<"$line"
+    CONFIG["$current_category.$key"]="$value"
+  fi
+done < configuration.ini
+
+get_config() {
+  echo "${CONFIG[$1]}" # 读取配置工具
+}
+
+PYTHON_HOME=""
 PYTHON_RECOMMENDED_VERSION="3.10.6"
-MODELS_HOME="$(dirname "$0")/models"
-LOGGING_PREFIX="\033[90m[\033[33mCoolCLK\033[90m/\033[36mturn-live-photos\033[90m] \033[0m"
+MODELS_HOME=$(get_config StoreOptions.ModelsHome)
+LOGGING_PREFIX=$'\e[90m[\e[33mCoolCLK\e[90m/\e[36mturn-live-photos\e[90m] \e[0m'
 
-end() {
-    echo -e "${LOGGING_PREFIX}关闭脚本中"
-    exit 0
-}
-
-check_python() {
-    if ! command -v python &> /dev/null; then
-        echo -e "${LOGGING_PREFIX}未检测到 Python 环境"
-        exit
+if [[ "${CONFIG[LaunchOptions.SkipPythonChecking]}" != "True" ]]; then
+  if ! command -v python &> /dev/null; then
+    echo -e "${LOGGING_PREFIX}未检测到 Python 环境"
+    exit 1
+  else
+    PYTHON_VERSION=$(python --version 2>&1)
+    if [[ "$PYTHON_VERSION" != "Python $PYTHON_RECOMMENDED_VERSION" ]]; then
+      echo -e "${LOGGING_PREFIX}警告：你正在使用一个不被支持的 Python 版本 ${PYTHON_VERSION}"
+      echo -e "${LOGGING_PREFIX}我们推荐使用 Python ${PYTHON_RECOMMENDED_VERSION}"
+      echo -e "${LOGGING_PREFIX}详见 https://www.python.org/downloads/release/python-3106/"
     fi
+  fi
+fi
 
-    PYTHON_VERSION=$(python --version 2>&1 | awk '{print $2}')
-    if [[ "$PYTHON_VERSION" != "3.10.6" ]]; then
-        echo -e "${LOGGING_PREFIX}警告：检测到不支持的 Python 版本 $PYTHON_VERSION"
-        echo -e "${LOGGING_PREFIX}我们推荐使用 Python ${PYTHON_RECOMMENDED_VERSION}"
-        echo -e "${LOGGING_PREFIX}详见 https://www.python.org/downloads/release/python-3106/"
+if [[ "${CONFIG[LaunchOptions.UseVenv]}" == "True" ]]; then
+  VENV_HOME=$(get_config StoreOptions.VenvHome)
+  if [[ ! -d "$VENV_HOME" ]]; then
+    echo -e "${LOGGING_PREFIX}正在创建虚拟环境中"
+    python -m venv "$VENV_HOME" &> /dev/null
+    echo -e "${LOGGING_PREFIX}在 $VENV_HOME 目录创建了虚拟环境"
+    PYTHON_HOME="$VENV_HOME/bin/"
+  fi
+  echo -e "${LOGGING_PREFIX}激活虚拟环境中..."
+  source "$VENV_HOME/bin/activate"
+fi
+
+read -r -p "${LOGGING_PREFIX}是否检查依赖 (Y/n) " DO_CHECK_REQUIRMENTS
+if [[ "${DO_CHECK_REQUIRMENTS^^}" == "Y" || -z "$DO_CHECK_REQUIRMENTS" ]]; then
+  PIP_ARGS=""
+  [[ -n "${CONFIG[InstalltionOptions.PipMirrorUrl]}" ]] && PIP_ARGS=" -i ${CONFIG[InstalltionOptions.PipMirrorUrl]}"
+  
+  echo -e "${LOGGING_PREFIX}从 requirements.txt 处理依赖中"
+  echo -en "\e[31m"
+  python -m pip install --upgrade pip$PIP_ARGS &> /dev/null
+  "${PYTHON_HOME}pip3" install torch==$(get_config InstalltionOptions.TorchVersion) torchvision torchaudio$PIP_ARGS &> /dev/null
+  "${PYTHON_HOME}pip" install -r requirements.txt$PIP_ARGS &> /dev/null
+  echo -en "\e[0m"
+fi
+
+read -r -p "${LOGGING_PREFIX}是否提前下载/更新模型 (Y/n) " DO_DOWNLOAD_MODEL
+if [[ "${DO_DOWNLOAD_MODEL^^}" == "Y" || -z "$DO_DOWNLOAD_MODEL" ]]; then
+  if command -v git &> /dev/null; then
+    echo -e "${LOGGING_PREFIX}我们默认你已安装 Git LFS（https://git-lfs.com/）"
+    
+    MODEL_NAME=$(get_config ModelOptions.ModelName)
+    MODEL_REPO=$(get_config InstalltionOptions.ModelRepositoryUrl)
+    MODELS_DIR="${MODELS_HOME}/${MODEL_NAME}"
+    
+    GIT_ACTION="clone"
+    if [[ -d "$MODELS_DIR" ]]; then 
+      GIT_ACTION="pull"
+      cd "$MODELS_DIR" || exit 1
+    else
+      mkdir -p "${MODELS_HOME}" && cd "${MODELS_HOME}" || exit 1
     fi
-}
+    
+    echo -e "${LOGGING_PREFIX}开始拉取 $MODEL_NAME ..."
+    echo -en "\e[31m"
+    git lfs install &> /dev/null
+    [[ "$GIT_ACTION" == "clone" ]] && git clone "$MODEL_REPO" &> /dev/null || git pull &> /dev/null
+    echo -en "\e[0m"
+    cd - >/dev/null || exit 1
+  else
+    echo -e "${LOGGING_PREFIX}检测到未安装 Git（https://git-scm.com/），正在跳过..."
+  fi
+fi
 
-activate_venv() {
-    if [[ ! -d "$VENV_HOME" ]]; then
-        echo -e "${LOGGING_PREFIX}正在创建虚拟环境中"
-        python -m venv "$VENV_HOME"
-        echo -e "${LOGGING_PREFIX}在 $VENV_HOME 目录创建了虚拟环境"
-    fi
+RUN_ARGS=$(get_config LaunchOptions.RunArguments)
+if [[ -z "$RUN_ARGS" ]]; then
+  echo -e "${LOGGING_PREFIX}启动 Python 脚本"
+  "${PYTHON_HOME}python" app.py
+else
+  echo -e "${LOGGING_PREFIX}以 $RUN_ARGS 的参数启动 Python 脚本"
+  "${PYTHON_HOME}python" app.py $RUN_ARGS
+fi
+echo -e "${LOGGING_PREFIX}Python 脚本已停止"
 
-    echo -e "${LOGGING_PREFIX}激活虚拟环境中..."
-    source "$VENV_HOME/Scripts/activate"
-}
+if [[ "${CONFIG[LaunchOptions.UseVenv]}" == "True" ]]; then
+  echo -e "${LOGGING_PREFIX}停用虚拟环境中"
+  deactivate
+fi
 
-install_dependencies() {
-    read -p "${LOGGING_PREFIX}是否检查依赖 (Y/n) " DO_CHECK
-    if [[ "$DO_CHECK" =~ ^[Yy]$ ]] || [[ -z "$DO_CHECK" ]]; then
-        echo -e "${LOGGING_PREFIX}从 requirements.txt 处理依赖中[31m"
-        echo -e "[31m"
-        pip install --upgrade pip -i https://pypi.tuna.tsinghua.edu.cn/simple > /dev/null 2>&1
-        pip install torch==2.7.0+cu128 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128 > /dev/null 2>&1
-        pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple > /dev/null 2>&1
-        echo -e "[0m"
-    fi
-}
-
-pretrained_model_downloading() {
-    read -p "${LOGGING_PREFIX}是否提前下载/更新模型 (Y/n) " DO_DOWNLOAD
-    if [[ "$DO_DOWNLOAD" =~ ^[Yy]$ ]] || [[ -z "$DO_DOWNLOAD" ]]; then
-        if ! command -v git &> /dev/null; then
-            echo -e "${LOGGING_PREFIX}检测到未安装 Git（https://git-scm.com/），正在跳过..."
-            return
-        fi
-
-        MODEL_URL="https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt"
-        read -p "${LOGGING_PREFIX}是否使用 hf-mirror.com 镜像 (Y/n) " USE_MIRROR
-        if [[ "$USE_MIRROR" =~ ^[Yy]$ ]]; then
-            MODEL_URL="https://hf-mirror.com/stabilityai/stable-video-diffusion-img2vid-xt"
-        fi
-
-        echo -e "${LOGGING_PREFIX}我们默认你已安装 Git LFS（https://git-lfs.com/）"
-        git lfs install --force > /dev/null 2>&1
-
-        MODEL_DIR="${MODELS_HOME}stabilityai/stable-video-diffusion-img2vid-xt"
-        if [[ -d "$MODEL_DIR" ]]; then
-            echo -e "${LOGGING_PREFIX}开始拉取 stabilityai/stable-video-diffusion-img2vid-xt ..."
-            git -C "$MODEL_DIR" pull > /dev/null 2>&1
-        else
-            echo -e "${LOGGING_PREFIX}开始克隆 stabilityai/stable-video-diffusion-img2vid-xt ..."
-            git clone "$MODEL_URL" "$MODEL_DIR" > /dev/null 2>&1
-        fi
-}
-
-run_script() {
-    echo -e "${LOGGING_PREFIX}以 $(cat run_args.txt) 的参数启动 Python 脚本"
-    python app.py $(cat run_args.txt)
-    echo -e "${LOGGING_PREFIX}Python 脚本已停止"
-}
-
-deactivate_venv() {
-    echo -e "${LOGGING_PREFIX}停用虚拟环境中"
-    source "$VENV_HOME/Scripts/deactivate"
-}
-
-check_python
-activate_venv
-install_dependencies
-pretrained_model_downloading
-run_script
-deactivate_venv
-exit
+echo -e "${LOGGING_PREFIX}关闭脚本中"

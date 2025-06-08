@@ -4,12 +4,11 @@
 主要的 Web 框架和逻辑。
 
 依赖库: 
-- torch==2.7.0+cu128
+- torch==2.7.1+cu128
 - diffusers==0.33.1
 - pillow==11.2.1
 - Flask==3.1.1
-- Werkzeug==3.1.3
-- Jinja2==3.1.6
+- ngrok==1.4.0
 - 以及所有 modules 下的依赖库...
 作者: CoolCLK
 """
@@ -42,8 +41,7 @@ from modules.model import load_model
 from PIL import Image
 import torch
 import tempfile
-import configuration as conf
-from time import sleep
+import modules.configuration as conf
 
 diffusers.utils.logging.set_verbosity_error()
 if not args.progress_bar:

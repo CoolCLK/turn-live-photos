@@ -72,33 +72,9 @@ __A:__ ~~因为这些坑我全都踩过。~~
 
 Python：推荐使用 `3.10.6`，默认使用 `pytorch==2.7.0+cu128`。
 
-显卡：至少显存大于 _8G_，且 [CUDA](https://developer.nvidia.com/cuda-toolkit) 版本为 `12.8`。
+显卡：至少显存大于 _8G_，默认 [CUDA](https://developer.nvidia.com/cuda-toolkit) 版本为 `12.8`。
 
-#### 使用 CPU 或其它版本的 CUDA 
-
-注意，如果你想使用 CPU 或 [CUDA](https://developer.nvidia.com/cuda-toolkit) 其它版本的话，请打开 [PyTorch](https://pytorch.org/get-started/locally/) 选择适合你的版本，复制代码。比如 CPU 的代码是这样的：
-
-`pip3 install torch torchvision torchaudio`
-
-找到 [START.bat](START.bat) 的安装代码，它应该长这样：
-
-`"%PYTHON_HOME%/pip3.exe" install torch==2.7.0+cu128 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128>nul 1>nul`
-
-为了应用 CPU 版本的 [PyTorch](https://pytorch.org/get-started/locally/)，应该将脚本中代码改为这样：
-
-`"%PYTHON_HOME%/pip3.exe" install torch torchvision torchaudio>nul 1>nul`
-
-当然，不同版本的 [CUDA](https://developer.nvidia.com/cuda-toolkit) 可能丢失部分特性，_更重要的是，我们**强烈**不推荐使用 CPU 进行运算_。
-
-#### 使用 AMD 显卡
-
-~~`torch-directml==0.2.5.dev240914` 已经被提前放入了 [requirments.txt](requirments.txt)，因而可以直接使用，_但是我们并不推荐使用 AMD 显卡进行运算_。~~
-
-`torch-directml==0.2.5.dev240914` 与 `pytorch==2.7.0+cu128` 不兼容。
-
-#### 指令集优先级
-
-优先 `cuda`，其次 `dml`，最后 `cpu`，因而可能会出现双卡**只**跑了一张卡的情况。
+> 此项目同时使用了 `accelerate==1.7.0` ，支持多卡运算。
 
 ### 下载/安装
 
@@ -108,7 +84,7 @@ Python：推荐使用 `3.10.6`，默认使用 `pytorch==2.7.0+cu128`。
 
 找到最新的 [Release](https://api.github.com/repos/CoolCLK/turn-live-photos/releases/latest) 即可下载。
 
-~~不过大概率是不会出稳定版了。~~
+> 目前尚未稳定版提供。
 
 #### 下载最新的实验版
 
@@ -131,39 +107,45 @@ _警告：实验板往往是不稳定、不确定能够正常运行的版本！_
 
 倘若你想要提前下载模型，不仅要安装 [Git](https://git-scm.com/)，还要安装 [Git LFS](https://git-lfs.com/)。
 
-> 注：由于 [huggingface.co](https://huggingface.co/) 被 GFW 屏蔽，因而脚本中允许你使用 [hf-mirror.com](https://hf-mirror.com/) 下载模型，但这样只能够以本地模式运行模型，其存放在 `models` 文件夹下，意味着你也可以制作离线包。
+> 注：由于 [huggingface.co](https://huggingface.co/) 被 GFW 屏蔽，因而配置文件中允许你使用 [hf-mirror.com](https://hf-mirror.com/) 下载模型，但这样只能够以本地模式运行模型，其一般存放在 `models` 文件夹下，意味着你也可以下载它人提供已经下载好了的仓库。
 
 之后，跟随脚本的指引打开部署的网页。
 
 拖放或上传任意一张照片后等待即可。
 
-> 使用 1024 x 576 的图像最佳。
+> 使用 1024 x 576 的图像最佳，其它大小的照片也可。
 
 倘若你不想让结果输出到 `outputs` 的话，可以添加参数 `--output-temp`。
 
 #### 配置
 
-我们使用 [configuration.py](configuration.py) 进行配置，不用担心，它们易于配置！
+我们使用 [configuration.ini](configuration.ini) 进行配置，不用担心，它们易于配置！
 
 见表：
 
-|属性|值类型|说明|
-|---|---|---|
-|`app_host`|`string`|主机名，_在 ngrok 模式下无效_。|
-|`app_port`|`unsigned short`|人话就是`0`~`65535`，运行端口，_在 ngrok 模式下无效_。|
-|`app_max_file_size`|`unsigned int`|以字节为单位，最大允许上传文件的大小|
-|`output_folder`|`string`|输出文件的位置|
-|`output_fps`|`unsigned int`，以帧/秒作为单位|最好使用`15`或`24`，效果最好|
-|`output_frames`|`unsigned int`|输出帧数|
-|`model_folder`|`string`|储存模型的位置，**需要在末尾加上 `/`**|
-|`model_inference_steps`|`unsigned int`|越高质量也会越高，但是要求的显存会更高。|
-|`model_decode_chunk_size`|`unsigned int`|越高的数值有利于减少显存，***小概率*会造成画面撕裂**|
-|`model_name`|`string`|模型名称，此项目使用 [stabilityai/stable-video-diffusion-img2vid-xt](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt)|
-|`model_unet`|`bool`|如果可以使用 UNet 模型的话，那就使用，同时会占用一部分显存，*仅限 Linux 平台*|
+|项|键|值类型|说明|
+|---|---|---|---|
+|`LaunchOptions`|`UseVenv`|`boolean`|使用虚拟环境。|
+|`LaunchOptions`|`SkipPythonChecking`|`boolean`|跳过[Python](https://python.org) 的版本检查。|
+|`LaunchOptions`|`RunArguments`|`string`|程序的运行参数。|
+|`InstalltionOptions`|`PipMirrorUrl`|`string`|使用 `pip` 指令时选用的镜像源。|
+|`InstalltionOptions`|`TorchVersion`|`string`| `torch` 依赖选用的版本，可以在 [Get Started](https://pytorch.org/get-started/locally/) 查询，目前支持 `2.7.1+cu118`、`2.7.1+cu126`、`2.7.1+cu128`，更高的版本往往支持更多的特性。|
+|`InstalltionOptions`|`ModelRepositoryUrl`|`string`| 目标模型的仓库 URL 链接，默认使用 [HF-Mirror](https://hf-mirror.com/) 的 [stabilityai/stable-video-diffusion-img2vid-xt](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt)，**需要与 `ModelOptions` 中的 `ModelName` 相匹配**。|
+|`StoreOptions`|`VenvHome`|`string`|[Python](https://python.org) 虚拟环境的位置。|
+|`StoreOptions`|`ModelsHome`|`string`|本地/离线模型存放位置。|
+|`WebOptions`|`Host`|`string`|主机名。|
+|`WebOptions`|`Port`|`int`|取值范围`0`~`65535`，运行端口。|
+|`WebOptions`|`MaxContentLength`|`int`|以字节为单位，最大允许上传文件的大小。|
+|`StoreOptions`|`OutputsHome`|`string`|输出文件的位置。|
+|`ModelOptions`|`OutputFPS`|`int`，以帧/秒作为单位|最好使用`15`或`24`，效果最好。|
+|`ModelOptions`|`OutputFrames`|`int`|输出帧数。|
+|`StoreOptions`|`ModelsHome`|`string`|储存模型的位置，**需要在末尾加上 `/`**|
+|`ModelOptions`|`InferenceSteps`|`int`|越高质量也会越高，但是要求的显存会更高。|
+|`ModelOptions`|`DecodeChunkSize`|`int`|越高的数值有利于减少显存，***小概率*会造成画面撕裂**_（据 [Hugging Face](https://huggingface.co) 官方文档所说，但实际影响不大，可以不填写此项）_。|
+|`ModelOptions`|`ModelName`|`string`|模型名称，此项目使用 [stabilityai/stable-video-diffusion-img2vid-xt](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt)，若追求性能，可以使用 [stabilityai/stable-video-diffusion-img2vid](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid)，**需要与 `InstalltionOptions` 中的 `ModelRepositoryUrl` 相匹配**。|
+|`ModelOptions`|`UNet`|`boolean`|如果可以使用 UNet 模型的话，那就使用，同时会占用一部分显存，*仅限 Linux 平台*|
 
 当然，你也可以在 Web 中调节参数，但这是有限的，__因为设计时是考虑到您与您的访客的__，因而一些造成**崩溃**的数值*不会被允许在 Web 上调节*。
-
-倘若你想要配置启动参数的话，可以编辑 [run_args.txt](run_args.txt) 来修改。
 
 如果像获取更多参数帮助，可以使用命令 `python __main__.py --help` 来查阅。
 
