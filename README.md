@@ -60,9 +60,9 @@ __A:__ 此属于**正常现象**，若要追求更好的效果，可以适当提
 
 __A:__ 尽可能降低配置的值，如**推理步数***（`model_inference_steps`）*等。如果设备支持显存**动态分区**_（`expandable_segments`）_，请添加参数 `--max-split-size-mb=<size>`_（其中`<size>`应是你的空闲显存大小）_。
 
-#### __Q:__ 为什么生成完毕后没有照片？
+#### __Q:__ 为什么生成时提示 `Sizes of tensors must match except in dimension 2. Expected size 1 but got size 2 for tensor number 1 in the list.` ？
 
-__A:__ 我在测试时发现是 `TensorHalf` 的问题 _（即数据类型不匹配 `fp16` 的半精度，但奇怪的是它仍旧能够正常运行）_，目前已经在 [更新例子，修复 TensorHalf 的问题（未经测试） · CoolCLK/turn-live-photos@abf2a2a](https://github.com/CoolCLK/turn-live-photos/commit/abf2a2a2704b6342cd843f13f8e71923477f3b72) **尝试**修复了此问题，
+__A:__ 根据多次测试后，**有可能**是参数不匹配导致的问题，建议调整环境及参数以运行模型。
 
 ### 配置要求
 
