@@ -143,6 +143,8 @@ _警告：实验板往往是不稳定、不确定能够正常运行的版本！_
 |`ModelOptions`|`DecodeChunkSize`|`int`|越高的数值有利于减少显存，***小概率*会造成画面撕裂**_（据 [Hugging Face](https://huggingface.co) 官方文档所说，但实际影响不大，可以不填写此项）_。|
 |`ModelOptions`|`ModelName`|`string`|模型名称，此项目使用 [stabilityai/stable-video-diffusion-img2vid-xt](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt)，若追求性能，可以使用 [stabilityai/stable-video-diffusion-img2vid](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid)，**需要与 `InstalltionOptions` 中的 `ModelRepositoryUrl` 相匹配**。|
 |`ModelOptions`|`UNet`|`boolean`|如果可以使用 UNet 模型的话，那就使用，同时会占用一部分显存，*仅限 Linux 平台*|
+|`ModelOptions`|`ImagePromptWidth`|`int`|将输入的照片**拉伸**的宽度，调整其数值可以改善输出质量。|
+|`ModelOptions`|`ImagePromptWidth`|`int`|将输入的照片**拉伸**的高度，调整其数值可以改善输出质量。|
 
 当然，你也可以在 Web 中调节参数，但这是有限的，__因为设计时是考虑到您与您的访客的__，因而一些造成**崩溃**的数值*不会被允许在 Web 上调节*。
 

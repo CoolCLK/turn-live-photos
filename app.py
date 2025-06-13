@@ -75,27 +75,34 @@ def route_generate():
     if not allowed_file(file.filename):
         return '{"message": "不支持的格式"}', 415
     
-    generate_path = None
     try:
         motion_bucket_id = int(request.form.get('motion_bucket_id', None))
         if motion_bucket_id is not None and (motion_bucket_id < 0 and motion_bucket_id > 255):
             return '{"message": "motion_bucket_id 超出了范围"}', 400
-        model.generate(
-            image = read_image_file(file = file).convert('RGB'),
-            output_gif_path = os.path.join(tempfile.mkdtemp() if args.output_temp else conf.output_folder, "%s.gif" % file.name),
-            num_frames = conf.output_frames,
-            num_inference_steps = conf.model_inference_steps,
-            max_guidance_scale = float(request.form.get('max_guidance_scale', None)),
-            fps = conf.output_fps,
-            motion_bucket_id = int(motion_bucket_id),
-            noise_aug_strength = float(request.form.get('noise_aug_strength', None)),
-            decode_chunk_size = conf.model_decode_chunk_size,
-        )
-        return send_file(generate_path, mimetype = 'image/gif')
+        output_path = os.path.join(tempfile.mkdtemp() if args.output_temp else conf.output_folder, "%s.gif" % file.name)
+        max_guidance_scale = float(request.form.get('max_guidance_scale', None))
+        motion_bucket_id = int(motion_bucket_id)
+        noise_aug_strength = float(request.form.get('noise_aug_strength', None))
     except ValueError:
         return '{"message": "请求的参数或服务配置中类型不符合要求"}', 400
     except torch.cuda.OutOfMemoryError:
         return '{"message": "服务器繁忙"}', 503
+    try:
+        model.generate(
+            image = read_image_file(file = file).convert('RGB'),
+            output_gif_path = output_path,
+            num_frames = conf.output_frames,
+            num_inference_steps = conf.model_inference_steps,
+            max_guidance_scale = max_guidance_scale,
+            fps = conf.output_fps,
+            motion_bucket_id = motion_bucket_id,
+            noise_aug_strength = noise_aug_strength,
+            decode_chunk_size = conf.model_decode_chunk_size,
+        )
+    except Exception as e:
+        logger.warning(e)
+        return '{"message": "生成时发生错误"}', 500
+    return send_file(output_path, mimetype = 'image/gif')
 
 def __main__():
     """主程序"""
@@ -105,8 +112,8 @@ def __main__():
     elif args.output_temp:
         logger.info("注意：你已禁用了文件输出。")
     app.config['MAX_CONTENT_LENGTH'] = conf.app_max_file_size
-    model_path = "%s%s" % (conf.model_folder, conf.model_name)
-    model_use_local = os.path.isdir(model_path) or os.path.isfile(model_path)
+    model_path = "%s/%s" % (conf.model_folder, conf.model_name)
+    model_use_local = os.path.isdir(model_path)
     use_model_name = model_path if model_use_local else conf.model_name
     model = load_model(model = use_model_name, torch_dtype = torch.float16, variant = 'fp16')
     logger.info("成功加载了模型 %s" % (use_model_name))
